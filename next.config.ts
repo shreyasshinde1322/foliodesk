@@ -1,7 +1,15 @@
 import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
-  /* config options here */
+  async redirects() {
+    return [
+      {
+        source: "/kdp/paperback-cover-calculator",
+        destination: "/kdp-cover-calculator",
+        permanent: true,
+      },
+    ];
+  },
 };
 
 export default nextConfig;

@@ -1,26 +1,130 @@
 @import "tailwindcss";
 
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
+  --primary: #3b5bfd;
+  --primary-hover: #2c4ae8;
+  --secondary: #0b1220;
+  --background: #f3f5f9;
+  --surface: #ffffff;
+  --surface-elevated: #ffffff;
+  --text: #0b1220;
+  --muted: #5c6578;
+  --border: #e2e6ef;
+  --success: #17803d;
+  --warning: #a15c07;
+  --error: #c0352b;
+  --info: #3b5bfd;
+  --focus: #3b5bfd;
+  --paper: var(--background);
+  --paper-deep: #ebeef5;
+  --panel: var(--surface);
+  --ink: var(--text);
+  --line: var(--border);
+  --accent: var(--primary);
+  --radius-sm: 8px;
+  --radius-md: 12px;
+  --radius-lg: 18px;
+  --shadow-subtle: 0 1px 2px rgba(11, 18, 32, 0.04);
+  --shadow-card: 0 1px 2px rgba(11, 18, 32, 0.04), 0 10px 24px rgba(11, 18, 32, 0.04);
+  --shadow-elevated: 0 16px 40px rgba(11, 18, 32, 0.1);
+  --shadow-inset: inset 0 1px 2px rgba(11, 18, 32, 0.05);
+  --space-xs: 0.25rem;
+  --space-sm: 0.5rem;
+  --space-md: 1rem;
+  --space-lg: 1.5rem;
+  --space-xl: 2rem;
+  --space-2xl: 3rem;
+  --space-3xl: 5rem;
+  --ease-fast: 120ms ease;
+  --ease-normal: 200ms ease;
 }
 
 @theme inline {
+  --color-primary: var(--primary);
+  --color-primary-hover: var(--primary-hover);
+  --color-secondary: var(--secondary);
   --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
+  --color-surface: var(--surface);
+  --color-surface-elevated: var(--surface-elevated);
+  --color-text: var(--text);
+  --color-muted: var(--muted);
+  --color-border: var(--border);
+  --color-success: var(--success);
+  --color-warning: var(--warning);
+  --color-error: var(--error);
+  --color-info: var(--info);
+  --color-paper: var(--paper);
+  --color-paper-deep: var(--paper-deep);
+  --color-panel: var(--panel);
+  --color-ink: var(--ink);
+  --color-line: var(--line);
+  --color-accent: var(--accent);
+  --font-sans: var(--font-inter), ui-sans-serif, system-ui, sans-serif;
+  --font-serif: var(--font-source-serif);
+  --shadow-subtle: var(--shadow-subtle);
+  --shadow-card: var(--shadow-card);
+  --shadow-elevated: var(--shadow-elevated);
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
+html {
+  background: var(--background);
+  color: var(--text);
 }
 
 body {
+  min-height: 100%;
   background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  color: var(--text);
+}
+
+.surface-raised {
+  background: var(--surface);
+  box-shadow: var(--shadow-card);
+}
+
+.surface-float {
+  background: var(--surface);
+  box-shadow: var(--shadow-elevated);
+}
+
+.surface-inset {
+  background: var(--paper-deep);
+  box-shadow: var(--shadow-inset);
+}
+
+.tool-visual .tv-source,
+.tool-visual .tv-dest,
+.tool-visual .tv-arrow,
+.tool-visual .tv-overlay {
+  transition: transform var(--ease-normal);
+}
+
+:focus-visible {
+  outline: 2px solid var(--focus);
+  outline-offset: 3px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation: none !important;
+    transition: none !important;
+    scroll-behavior: auto !important;
+  }
+}
+
+.skip-link {
+  position: absolute;
+  left: 1rem;
+  top: -3rem;
+  z-index: 80;
+  border-radius: var(--radius-sm);
+  background: var(--text);
+  color: var(--surface);
+  padding: 0.5rem 0.75rem;
+}
+
+.skip-link:focus {
+  top: 1rem;
 }
