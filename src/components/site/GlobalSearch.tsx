@@ -107,7 +107,7 @@ export function GlobalSearch({
       ) : null}
       {open && query.trim() ? (
         <ul
-          className="absolute z-50 mt-2 max-h-80 w-full overflow-auto rounded-xl border border-[#e5e7eb] bg-white p-1 shadow-[0_18px_40px_rgba(15,23,42,0.12)]"
+          className="absolute z-50 mt-2 max-h-80 w-full overflow-auto rounded-2xl border border-border bg-white p-1 shadow-[var(--shadow-elevated)]"
           id={listId}
           role="listbox"
         >
@@ -118,7 +118,7 @@ export function GlobalSearch({
               <li
                 aria-selected={index === active}
                 className={`rounded-[var(--radius-sm)] ${
-                  index === active ? "bg-paper-deep" : ""
+                  index === active ? "bg-primary-soft/70" : ""
                 }`}
                 id={`${listId}-opt-${index}`}
                 key={tool.slug}

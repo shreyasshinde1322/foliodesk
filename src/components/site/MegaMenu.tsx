@@ -84,7 +84,7 @@ export function MegaMenu() {
                 className={`inline-flex items-center gap-1 whitespace-nowrap border-b-2 px-3 text-[13px] font-medium transition-colors ${
                   isOpen || active
                     ? "border-primary text-primary"
-                    : "border-transparent text-[#4b5563] hover:text-text"
+                    : "border-transparent text-muted hover:text-text"
                 }`}
                 onClick={() =>
                   setOpen((current) =>
@@ -116,7 +116,7 @@ export function MegaMenu() {
                   id={`${menuId}-${item.category}`}
                   role="menu"
                 >
-                  <div className="relative w-max max-w-[min(92vw,40rem)] rounded-lg border border-border bg-white p-4 shadow-[0_16px_40px_rgba(15,23,42,0.12)]">
+                  <div className="relative w-max max-w-[min(92vw,40rem)] rounded-2xl border border-border bg-white p-4 shadow-[var(--shadow-elevated)] ring-1 ring-black/[0.02]">
                     <span
                       aria-hidden="true"
                       className={`absolute -top-1.5 h-3 w-3 rotate-45 border-l border-t border-border bg-white ${
@@ -148,7 +148,7 @@ export function MegaMenu() {
                             {group.tools.map((tool) => (
                               <li key={tool.slug}>
                                 <Link
-                                  className="flex items-center gap-2 rounded-md px-1 py-1.5 text-[13px] text-text hover:bg-paper-deep"
+                                  className="flex items-center gap-2 rounded-lg px-1 py-1.5 text-[13px] text-text transition-colors hover:bg-primary-soft/70"
                                   href={tool.route}
                                   role="menuitem"
                                 >

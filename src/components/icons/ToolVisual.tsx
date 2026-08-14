@@ -77,7 +77,7 @@ export function IconWell({
   const box = size === "sm" ? 32 : size === "md" ? 40 : 44;
   return (
     <span
-      className="inline-flex shrink-0 items-center justify-center overflow-visible rounded-lg bg-paper-deep"
+      className="inline-flex shrink-0 items-center justify-center overflow-visible rounded-lg bg-gradient-to-br from-primary-soft to-paper-deep ring-1 ring-border/60"
       style={{ width: box, height: box }}
     >
       {children}
@@ -132,7 +132,7 @@ function Overlay({ action, size }: { action: ToolAction; size: IconSize }) {
   return (
     <span
       aria-hidden="true"
-      className="pointer-events-none absolute -bottom-1 -right-1 flex items-center justify-center rounded-full bg-white text-text ring-1 ring-border"
+      className="pointer-events-none absolute -bottom-1 -right-1 flex items-center justify-center rounded-full bg-white text-text shadow-[var(--shadow-card)] ring-1 ring-border"
       style={{ width: px, height: px }}
     >
       {mark}

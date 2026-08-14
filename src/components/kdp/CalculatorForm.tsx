@@ -18,7 +18,7 @@ import type {
 } from "@/lib/kdp/types";
 
 const fieldClass =
-  "mt-1 w-full rounded-md border border-line bg-panel px-3 py-2 text-sm text-ink disabled:cursor-not-allowed disabled:bg-paper-deep disabled:text-muted";
+  "mt-1 w-full rounded-md border border-border bg-white px-3 py-2 text-sm text-text shadow-[var(--shadow-subtle)] transition-[border-color,box-shadow] focus:border-primary focus:shadow-[0_0_0_3px_rgba(79,70,229,0.12)] disabled:cursor-not-allowed disabled:bg-paper-deep disabled:text-muted";
 
 export function CalculatorForm({
   value,
@@ -59,7 +59,7 @@ export function CalculatorForm({
 
   return (
     <form
-      className="surface-raised rounded-[var(--radius-md)] border border-border bg-surface p-5"
+      className="surface-raised rounded-2xl border border-border bg-white p-5"
       onSubmit={(event) => {
         event.preventDefault();
         onCalculate();
@@ -133,7 +133,7 @@ export function CalculatorForm({
             })}
           </select>
           {!isPaperAvailable(value.interiorType, value.paperType) ? (
-            <p className="mt-1 text-sm text-[#9b1c1c]">
+            <p className="mt-1 text-sm text-error">
               This paper type is not available for the selected interior.{" "}
               {PAPER_UNAVAILABLE_REASON[value.interiorType][value.paperType]}
             </p>
@@ -232,13 +232,13 @@ export function CalculatorForm({
       </div>
 
       <button
-        className="mt-5 w-full rounded-[var(--radius-sm)] bg-primary px-4 py-2.5 text-sm font-semibold text-surface hover:bg-primary-hover"
+        className="btn-primary mt-5 w-full"
         type="submit"
       >
         Calculate dimensions
       </button>
       <button
-        className="mt-2 w-full rounded-[var(--radius-sm)] border border-line bg-panel px-4 py-2.5 text-sm font-semibold hover:bg-paper-deep disabled:cursor-not-allowed disabled:opacity-50"
+        className="btn-secondary mt-2 w-full"
         disabled={!canDownload}
         onClick={onDownload}
         type="button"

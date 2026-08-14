@@ -4,10 +4,10 @@ import type { GuideEntry } from "@/data/guides";
 export function GuideCard({ guide }: { guide: GuideEntry }) {
   return (
     <Link
-      className="block h-full rounded-[var(--radius-md)] border border-border bg-surface p-5 shadow-[var(--shadow-subtle)] transition-[border-color] duration-[var(--ease-fast)] hover:border-primary/40"
+      className="card-hover block h-full rounded-2xl border border-border bg-white p-5 hover:border-primary/30"
       href={guide.href}
     >
-      <p className="text-[11px] font-semibold uppercase tracking-[0.14em] text-muted">
+      <p className="text-[11px] font-semibold uppercase tracking-[0.14em] text-primary">
         Guide
       </p>
       <h3 className="mt-2 font-serif text-xl tracking-tight">{guide.title}</h3>

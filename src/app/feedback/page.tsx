@@ -40,7 +40,7 @@ export default function FeedbackPage() {
           value={message}
         />
         <button
-          className="mt-4 rounded-[var(--radius-sm)] bg-primary px-4 py-2.5 text-sm font-semibold text-surface hover:bg-primary-hover"
+          className="btn-primary mt-4"
           type="submit"
         >
           Copy feedback

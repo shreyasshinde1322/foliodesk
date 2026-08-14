@@ -64,7 +64,7 @@ export function ToolPageLayout({
           <p className="text-sm font-semibold uppercase tracking-[0.12em] text-primary">
             {tool.category === "kdp" ? "KDP & Publishing" : tool.category}
           </p>
-          <h1 className="mt-2 text-4xl font-semibold tracking-tight sm:text-5xl">
+          <h1 className="mt-2 font-serif text-4xl font-semibold tracking-tight sm:text-5xl">
             {tool.name}
           </h1>
           <p className="mt-4 text-lg leading-relaxed text-muted">{lede}</p>
@@ -116,13 +116,13 @@ export function ToolPageLayout({
             <ol className="mt-8 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
               {howItWorks.map((item, index) => (
                 <li
-                  className="rounded-[var(--radius-md)] border border-border bg-surface p-5"
+                  className="card-hover rounded-2xl border border-border bg-white p-5"
                   key={item.title}
                 >
-                  <span className="text-xs font-semibold uppercase tracking-[0.14em] text-muted">
+                  <span className="text-xs font-semibold uppercase tracking-[0.14em] text-primary">
                     {String(index + 1).padStart(2, "0")}
                   </span>
-                  <h3 className="mt-3 font-serif text-xl">{item.title}</h3>
+                  <h3 className="mt-3 font-serif text-xl font-semibold">{item.title}</h3>
                   <p className="mt-2 text-sm text-muted">{item.body}</p>
                 </li>
               ))}

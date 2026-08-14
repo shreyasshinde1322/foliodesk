@@ -7,7 +7,7 @@ export function AdPlaceholder({
   return (
     <aside
       aria-label="Advertisement placeholder"
-      className={`flex ${minHeight} items-center justify-center rounded-[var(--radius-md)] border border-dashed border-border bg-paper-deep/40 px-4 py-6 text-center`}
+      className={`flex ${minHeight} items-center justify-center rounded-[var(--radius-md)] border border-dashed border-border bg-gradient-to-br from-paper-deep/70 to-primary-soft/40 px-4 py-6 text-center`}
     >
       <div>
         <p className="text-[11px] font-semibold uppercase tracking-[0.14em] text-muted">

@@ -153,7 +153,7 @@ export function CoverCalculator() {
               Fix the highlighted fields to calculate cover dimensions. Invalid
               combinations are not used to generate a template.
             </p>
-            <ul className="mt-3 list-disc space-y-1 pl-5 text-sm text-[#9b1c1c]">
+            <ul className="mt-3 list-disc space-y-1 pl-5 text-sm text-error">
               {issues
                 .filter((issue) => issue.field !== "paperTypeReason")
                 .map((issue) => (
@@ -163,7 +163,7 @@ export function CoverCalculator() {
           </div>
         )}
         {downloadError ? (
-          <p className="text-sm text-[#9b1c1c]" role="alert">
+          <p className="text-sm text-error" role="alert">
             {downloadError}
           </p>
         ) : null}

@@ -25,6 +25,7 @@ export type FileFormat =
   | "png"
   | "webp"
   | "gif"
+  | "avif"
   | "html"
   | "pdfa"
   | "epub"

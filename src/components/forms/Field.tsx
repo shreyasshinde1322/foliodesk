@@ -26,7 +26,7 @@ export function Field({
         {children}
       </div>
       {error ? (
-        <p className="mt-1 text-sm text-[#9b1c1c]" id={errorId} role="alert">
+        <p className="mt-1 text-sm text-error" id={errorId} role="alert">
           {error}
         </p>
       ) : null}

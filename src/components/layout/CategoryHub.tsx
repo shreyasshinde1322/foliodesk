@@ -19,15 +19,15 @@ export function CategoryHub({ category }: { category: ToolCategory }) {
   return (
     <PageShell className="pb-16 pt-8">
       <Breadcrumb items={[{ href: "/", label: "Home" }, { label: meta.label }]} />
-      <header className="mt-8 rounded-xl border border-border bg-white p-6 sm:p-8">
+      <header className="mt-8 rounded-2xl border border-border bg-gradient-to-br from-white to-primary-soft/50 p-6 shadow-[var(--shadow-card)] sm:p-8">
         <p className="text-[11px] font-semibold uppercase tracking-[0.16em] text-primary">
           {meta.label}
         </p>
         <div className="mt-3 flex flex-wrap items-end justify-between gap-4">
-          <h1 className="max-w-2xl text-3xl font-semibold tracking-tight sm:text-4xl">
+          <h1 className="max-w-2xl font-serif text-3xl font-semibold tracking-tight sm:text-4xl">
             {meta.headline}
           </h1>
-          <p className="rounded-full border border-border bg-paper-deep px-3 py-1 text-xs font-medium text-muted">
+          <p className="rounded-full border border-border bg-white px-3 py-1 text-xs font-medium text-muted">
             {live} live {live === 1 ? "tool" : "tools"}
           </p>
         </div>
@@ -37,7 +37,7 @@ export function CategoryHub({ category }: { category: ToolCategory }) {
         <WorkflowSteps current={0} steps={meta.workflow} />
         {category === "kdp" ? (
           <Link
-            className="mt-6 inline-flex rounded-md bg-primary px-4 py-2.5 text-sm font-semibold text-white hover:bg-primary-hover"
+            className="btn-primary mt-6"
             href="/kdp-cover-calculator"
           >
             Open cover calculator

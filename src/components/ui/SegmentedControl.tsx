@@ -25,9 +25,9 @@ export function SegmentedControl<T extends string>({
         return (
           <button
             aria-checked={selected}
-            className={`rounded-[var(--radius-sm)] px-3 py-2 text-sm font-medium transition-[background-color,color] duration-[var(--ease-fast)] ${
+            className={`rounded-[var(--radius-sm)] px-3 py-2 text-sm font-medium transition-[background-color,color,box-shadow] duration-[var(--ease-fast)] ${
               selected
-                ? "bg-surface text-text shadow-[var(--shadow-subtle)]"
+                ? "bg-white text-text shadow-[var(--shadow-subtle)] ring-1 ring-border"
                 : "text-muted hover:text-text"
             } ${option.disabled ? "opacity-70" : ""}`}
             disabled={option.disabled && !selected}

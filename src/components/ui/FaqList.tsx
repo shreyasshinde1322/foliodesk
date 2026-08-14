@@ -12,7 +12,7 @@ export function FaqList({ items }: { items: FaqItem[] }) {
               {item.question}
               <span
                 aria-hidden="true"
-                className="mt-0.5 text-muted transition-transform duration-[var(--ease-fast)] group-open:rotate-45"
+                className="mt-0.5 flex h-6 w-6 shrink-0 items-center justify-center rounded-full border border-border text-muted transition-[transform,color,background-color] duration-[var(--ease-fast)] group-open:rotate-45 group-open:border-primary group-open:bg-primary-soft group-open:text-primary"
               >
                 +
               </span>

@@ -12,7 +12,7 @@ export function SiteFooter() {
   const year = new Date().getFullYear();
 
   return (
-    <footer className="mt-20 border-t border-border bg-surface">
+    <footer className="mt-20 border-t border-border bg-white/70 backdrop-blur-sm">
       <div className="mx-auto grid max-w-6xl gap-10 px-4 py-12 sm:px-6 md:grid-cols-2 lg:grid-cols-5">
         <FooterCol title="Product">
           {CATEGORY_NAV.map((item) => (
@@ -56,7 +56,7 @@ export function SiteFooter() {
             endorsed by Amazon. Amazon, Kindle, and KDP are trademarks of their
             respective owners. Always verify print files in{" "}
             <a
-              className="underline underline-offset-2"
+              className="underline underline-offset-2 transition-colors hover:text-primary"
               href={KDP_SOURCES.coverCalculator}
               rel="noreferrer"
               target="_blank"

@@ -146,10 +146,10 @@ function DownloadOption({
 }) {
   return (
     <button
-      className={`rounded-[var(--radius-md)] border p-4 text-left disabled:cursor-not-allowed disabled:opacity-50 ${
+      className={`rounded-[var(--radius-md)] border p-4 text-left shadow-[var(--shadow-subtle)] disabled:cursor-not-allowed disabled:opacity-50 ${
         primary
-          ? "border-primary bg-primary text-surface hover:bg-primary-hover"
-          : "border-border hover:bg-paper-deep"
+          ? "border-transparent bg-brand-gradient text-white shadow-[var(--shadow-primary)] hover:shadow-[var(--shadow-elevated)]"
+          : "border-border bg-white hover:bg-paper-deep"
       }`}
       disabled={disabled}
       onClick={onClick}
@@ -157,7 +157,7 @@ function DownloadOption({
     >
       <span className="block text-sm font-semibold">{label}</span>
       <span
-        className={`mt-1 block text-xs ${primary ? "text-surface/80" : "text-muted"}`}
+        className={`mt-1 block text-xs ${primary ? "text-white/85" : "text-muted"}`}
       >
         {hint}
       </span>

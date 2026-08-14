@@ -13,7 +13,7 @@ export function ToolCard({
   const upcoming = tool.status !== "active";
   return (
     <Link
-      className="group flex h-full flex-col rounded-xl border border-border bg-white p-5 transition-[border-color,box-shadow] duration-[var(--ease-fast)] hover:border-primary/25 hover:shadow-[var(--shadow-card)]"
+      className="group card-hover flex h-full flex-col rounded-2xl border border-border bg-white p-5 hover:border-primary/30"
       href={tool.route}
     >
       <div className="flex items-start justify-between gap-3">
@@ -21,9 +21,13 @@ export function ToolCard({
           <ToolVisual size="sm" tool={tool} />
         </IconWell>
         {popular ? (
-          <span className="text-[11px] font-medium text-muted">Popular</span>
+          <span className="rounded-full bg-primary-soft px-2 py-0.5 text-[11px] font-semibold text-primary">
+            Popular
+          </span>
         ) : upcoming ? (
-          <span className="text-[11px] font-medium text-muted">Soon</span>
+          <span className="rounded-full bg-paper-deep px-2 py-0.5 text-[11px] font-medium text-muted">
+            Soon
+          </span>
         ) : null}
       </div>
       <h3 className="mt-5 text-sm font-semibold text-text">{tool.name}</h3>

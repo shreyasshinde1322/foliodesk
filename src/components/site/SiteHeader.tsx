@@ -35,13 +35,13 @@ export function SiteHeader() {
   }, [mobileOpen]);
 
   return (
-    <header className="sticky top-0 z-50 overflow-visible border-b border-border bg-white">
+    <header className="sticky top-0 z-50 overflow-visible border-b border-border bg-white/85 backdrop-blur-md">
       <div className="relative mx-auto grid h-14 max-w-6xl grid-cols-[auto_1fr_auto] items-center gap-6 px-4 sm:px-6">
         <Link
-          className="flex shrink-0 items-center gap-2 text-[15px] font-semibold tracking-tight text-text"
+          className="group flex shrink-0 items-center gap-2 text-[15px] font-semibold tracking-tight text-text"
           href="/"
         >
-          <span className="flex h-7 w-7 items-center justify-center rounded-md bg-primary text-white">
+          <span className="flex h-7 w-7 items-center justify-center rounded-lg bg-brand-gradient text-white shadow-[var(--shadow-primary)] transition-transform duration-[var(--ease-fast)] group-hover:scale-105">
             <BookMarked aria-hidden="true" className="h-3.5 w-3.5" />
           </span>
           FolioDesk
@@ -85,12 +85,12 @@ export function SiteHeader() {
         </div>
       </div>
       {searchOpen ? (
-        <div className="border-t border-border px-4 py-3 md:hidden">
+        <div className="border-t border-border bg-white/95 px-4 py-3 md:hidden">
           <GlobalSearch autoFocus variant="hero" />
         </div>
       ) : null}
       {mobileOpen ? (
-        <div className="max-h-[calc(100dvh-3.5rem)] overflow-auto border-t border-[#e5e7eb] bg-white lg:hidden">
+        <div className="max-h-[calc(100dvh-3.5rem)] overflow-auto border-t border-border bg-white/95 backdrop-blur-md lg:hidden">
           <nav aria-label="Mobile" className="px-4 py-3">
             {CATEGORY_NAV.map((item) => {
               const isOpen = expanded === item.category;

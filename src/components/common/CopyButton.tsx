@@ -31,12 +31,12 @@ export function CopyButton({
 
   return (
     <button
-      className="inline-flex items-center gap-1.5 rounded-md border border-line bg-panel px-2.5 py-1 text-xs font-medium text-ink hover:bg-paper-deep"
+      className="inline-flex items-center gap-1.5 rounded-lg border border-border bg-white px-2.5 py-1 text-xs font-medium text-muted shadow-[var(--shadow-subtle)] transition-colors hover:border-primary/40 hover:text-text"
       onClick={() => void copy()}
       type="button"
     >
       {copied ? (
-        <Check aria-hidden="true" className="h-3.5 w-3.5 text-accent" />
+        <Check aria-hidden="true" className="h-3.5 w-3.5 text-primary" />
       ) : (
         <Copy aria-hidden="true" className="h-3.5 w-3.5" />
       )}

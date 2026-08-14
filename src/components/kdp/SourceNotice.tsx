@@ -3,7 +3,7 @@ import { KDP_SOURCES } from "@/lib/kdp/specifications";
 export function SourceNotice() {
   return (
     <aside
-      className="rounded-lg border border-line bg-paper-deep/70 p-4 text-sm text-ink"
+      className="rounded-lg border border-border bg-white p-4 text-sm text-muted shadow-[var(--shadow-subtle)]"
       role="note"
     >
       <p>

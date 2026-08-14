@@ -58,11 +58,13 @@ export default function HomePage() {
       <PageShell className="pb-8 pt-10 sm:pt-14">
         <section className="grid items-center gap-10 lg:grid-cols-[1.1fr_0.9fr] lg:gap-12">
           <div>
-            <p className="text-sm font-semibold uppercase tracking-[0.12em] text-primary">
+            <p className="inline-flex items-center gap-2 rounded-full border border-border bg-white px-3 py-1 text-sm font-semibold text-primary shadow-[var(--shadow-subtle)]">
+              <Sparkles className="h-3.5 w-3.5" />
               FolioDesk
             </p>
-            <h1 className="mt-3 max-w-3xl text-[2.4rem] font-semibold leading-[1.15] tracking-tight text-text sm:text-5xl">
-              Everything you need to work with files.
+            <h1 className="mt-5 max-w-3xl font-serif text-[2.6rem] font-semibold leading-[1.12] tracking-tight text-text sm:text-6xl">
+              Everything you need to work with{" "}
+              <span className="text-gradient">files</span>.
             </h1>
             <p className="mt-5 max-w-xl text-lg leading-relaxed text-muted">
               Convert, compress, organize and prepare documents, images and
@@ -75,7 +77,7 @@ export default function HomePage() {
               {quick.map((tool) => (
                 <li key={tool.slug}>
                   <Link
-                    className="inline-flex rounded-full border border-border bg-white px-3.5 py-1.5 text-sm text-text hover:border-primary/40"
+                    className="inline-flex rounded-full border border-border bg-white px-3.5 py-1.5 text-sm text-text shadow-[var(--shadow-subtle)] transition-colors hover:border-primary/40 hover:text-primary"
                     href={tool.route}
                   >
                     {tool.name}
@@ -84,7 +86,12 @@ export default function HomePage() {
               ))}
             </ul>
           </div>
-          <FileWorkspace />
+          <div className="surface-raised rounded-2xl border border-border bg-white/80 p-6 sm:p-8">
+            <FileWorkspace />
+            <p className="mt-6 text-center text-xs text-muted">
+              File tools are live in the browser — nothing is uploaded.
+            </p>
+          </div>
         </section>
 
         <section className="mt-20">
@@ -114,33 +121,33 @@ export default function HomePage() {
         <section className="mt-24">
           <SectionHeading description="Only shipped work is listed here." title="What's new" />
           <div className="mt-10 grid gap-4">
-            {CHANGELOG.map((entry) => {
-              const tool = entry.slug ? getToolBySlug(entry.slug) : undefined;
-              return (
-                <Link
-                  className="group surface-raised flex items-start gap-4 rounded-[var(--radius-md)] border border-border p-5"
-                  href={entry.href}
-                  key={`${entry.date}-${entry.title}`}
-                >
-                  {tool ? <ToolVisual size="md" tool={tool} /> : null}
-                  <div>
-                    <div className="flex items-center gap-2 text-xs text-muted">
-                      <time dateTime={entry.date}>{entry.date}</time>
-                      {entry.badge ? (
-                        <span className="rounded-full bg-primary/10 px-2 py-0.5 font-semibold text-primary">
-                          {entry.badge}
-                        </span>
-                      ) : null}
+              {CHANGELOG.map((entry) => {
+                const tool = entry.slug ? getToolBySlug(entry.slug) : undefined;
+                return (
+                  <Link
+                    className="group card-hover flex items-start gap-4 rounded-2xl border border-border bg-white p-5"
+                    href={entry.href}
+                    key={`${entry.date}-${entry.title}`}
+                  >
+                    {tool ? <ToolVisual size="md" tool={tool} /> : null}
+                    <div>
+                      <div className="flex items-center gap-2 text-xs text-muted">
+                        <time dateTime={entry.date}>{entry.date}</time>
+                        {entry.badge ? (
+                          <span className="rounded-full bg-primary-soft px-2 py-0.5 font-semibold text-primary">
+                            {entry.badge}
+                          </span>
+                        ) : null}
+                      </div>
+                      <h3 className="mt-2 text-xl font-semibold">{entry.title}</h3>
+                      <p className="mt-2 text-sm leading-relaxed text-muted">
+                        {entry.description}
+                      </p>
+                      <p className="mt-3 text-sm font-semibold text-primary">Open tool →</p>
                     </div>
-                    <h3 className="mt-2 text-xl font-semibold">{entry.title}</h3>
-                    <p className="mt-2 text-sm leading-relaxed text-muted">
-                      {entry.description}
-                    </p>
-                    <p className="mt-3 text-sm font-semibold text-primary">Open tool →</p>
-                  </div>
-                </Link>
-              );
-            })}
+                  </Link>
+                );
+              })}
           </div>
         </section>
 
@@ -149,15 +156,17 @@ export default function HomePage() {
           <ul className="mt-10 grid gap-4 sm:grid-cols-2">
             {WHY.map((item) => (
               <li
-                className="surface-raised rounded-[var(--radius-md)] border border-border p-6"
+                className="card-hover rounded-2xl border border-border bg-white p-6"
                 key={item.title}
               >
-                <item.icon
-                  aria-hidden="true"
-                  className="h-5 w-5 text-primary"
-                  strokeWidth={1.75}
-                />
-                <h3 className="mt-3 text-xl font-semibold">{item.title}</h3>
+                <span className="inline-flex h-10 w-10 items-center justify-center rounded-xl bg-gradient-to-br from-primary-soft to-paper-deep text-primary ring-1 ring-border/60">
+                  <item.icon
+                    aria-hidden="true"
+                    className="h-5 w-5"
+                    strokeWidth={1.75}
+                  />
+                </span>
+                <h3 className="mt-4 font-serif text-xl font-semibold">{item.title}</h3>
                 <p className="mt-2 text-sm leading-relaxed text-muted">{item.body}</p>
               </li>
             ))}
@@ -168,24 +177,24 @@ export default function HomePage() {
           <SectionHeading title="How it works" />
           <ol className="mt-10 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
             {STEPS.map((step, index) => (
-              <li className="surface-raised rounded-[var(--radius-md)] border border-border p-5" key={step.title}>
-                <span className="text-xs font-semibold uppercase tracking-[0.14em] text-muted">
+              <li className="card-hover rounded-2xl border border-border bg-white p-5" key={step.title}>
+                <span className="text-xs font-semibold uppercase tracking-[0.14em] text-primary">
                   {String(index + 1).padStart(2, "0")}
                 </span>
-                <h3 className="mt-3 text-lg font-semibold">{step.title}</h3>
+                <h3 className="mt-3 font-serif text-lg font-semibold">{step.title}</h3>
                 <p className="mt-2 text-sm text-muted">{step.body}</p>
               </li>
             ))}
           </ol>
         </section>
 
-        <section className="mt-24 surface-raised rounded-[var(--radius-lg)] border border-border p-6 sm:p-8">
+        <section className="mt-24 surface-raised rounded-[var(--radius-lg)] border border-border bg-white p-6 sm:p-8">
           <SectionHeading
             description="Processing architecture differs by tool. Read the label on each tool page before you upload a file."
             title="Privacy & security"
           />
           <div className="mt-8 grid gap-4 md:grid-cols-2">
-            <div className="rounded-[var(--radius-md)] border border-border p-5">
+            <div className="rounded-[var(--radius-md)] border border-success/25 bg-success/[0.04] p-5">
               <p className="text-[11px] font-semibold uppercase tracking-[0.14em] text-success">
                 Local processing
               </p>
@@ -194,7 +203,7 @@ export default function HomePage() {
                 model: your trim size and page count never leave this device.
               </p>
             </div>
-            <div className="rounded-[var(--radius-md)] border border-border p-5">
+            <div className="rounded-[var(--radius-md)] border border-info/25 bg-info/[0.04] p-5">
               <p className="text-[11px] font-semibold uppercase tracking-[0.14em] text-info">
                 Server processing
               </p>
@@ -213,8 +222,8 @@ export default function HomePage() {
           </Link>
         </section>
 
-        <section className="mt-24 overflow-hidden rounded-xl border border-border bg-white">
-          <div className="grid gap-8 border-b border-border p-6 sm:p-8 lg:grid-cols-[1fr_auto] lg:items-center">
+        <section className="mt-24 overflow-hidden rounded-2xl border border-border bg-white shadow-[var(--shadow-card)]">
+          <div className="grid gap-8 border-b border-border bg-gradient-to-br from-primary-soft/70 via-white to-white p-6 sm:p-8 lg:grid-cols-[1fr_auto] lg:items-center">
             <div>
               <p className="text-[11px] font-semibold uppercase tracking-[0.16em] text-primary">
                 {CATEGORY_META.kdp.label}
@@ -228,13 +237,13 @@ export default function HomePage() {
               <WorkflowSteps current={0} steps={CATEGORY_META.kdp.workflow} />
               <div className="mt-6 flex flex-wrap gap-3">
                 <Link
-                  className="inline-flex rounded-md bg-primary px-4 py-2.5 text-sm font-semibold text-white hover:bg-primary-hover"
+                  className="btn-primary"
                   href="/kdp-cover-calculator"
                 >
                   Open cover calculator
                 </Link>
                 <Link
-                  className="inline-flex rounded-md border border-border px-4 py-2.5 text-sm font-semibold text-text hover:bg-paper-deep"
+                  className="btn-secondary"
                   href="/kdp"
                 >
                   View all KDP tools
@@ -247,7 +256,7 @@ export default function HomePage() {
             {cover ? <ToolCard tool={cover} /> : null}
             {cover ? (
               <Link
-                className="group flex h-full flex-col rounded-xl border border-border bg-white p-5 hover:border-primary/25 hover:shadow-[var(--shadow-card)]"
+                className="group card-hover flex h-full flex-col rounded-2xl border border-border bg-white p-5 hover:border-primary/30"
                 href="/kdp-cover-calculator"
               >
                 <div className="flex items-start justify-between gap-3">
@@ -278,13 +287,13 @@ export default function HomePage() {
           </div>
         </section>
 
-        <section className="mt-24 rounded-[var(--radius-lg)] border border-border bg-paper-deep/50 p-6 sm:p-8">
+        <section className="mt-24 rounded-[var(--radius-lg)] border border-border bg-gradient-to-br from-white to-paper-deep/60 p-6 sm:p-8">
           <SectionHeading
             description="There are no verified public reviews yet. If a tool helped—or got in the way—tell us what to change."
             title="User feedback"
           />
           <Link
-            className="mt-6 inline-flex rounded-[var(--radius-sm)] bg-primary px-4 py-2.5 text-sm font-semibold text-surface hover:bg-primary-hover"
+            className="mt-6 inline-flex btn-primary"
             href="/feedback"
           >
             Send Feedback
@@ -310,16 +319,16 @@ export default function HomePage() {
           </div>
         </section>
 
-        <section className="mt-24 rounded-xl border border-border bg-white px-6 py-12 sm:px-10">
-          <h2 className="text-3xl font-semibold tracking-tight sm:text-4xl">
+        <section className="mt-24 rounded-2xl border border-border bg-gradient-to-br from-primary-soft via-white to-primary-soft/60 px-6 py-12 text-center sm:px-10">
+          <h2 className="font-serif text-3xl font-semibold tracking-tight sm:text-4xl">
             Start with the cover calculator
           </h2>
-          <p className="mt-3 max-w-xl text-base leading-relaxed text-muted">
+          <p className="mx-auto mt-3 max-w-xl text-base leading-relaxed text-muted">
             It is the live tool today: paperback wrap math, a numbered preview,
             and SVG, PDF, or PNG templates generated in the browser.
           </p>
           <Link
-            className="mt-6 inline-flex rounded-md bg-primary px-4 py-2.5 text-sm font-semibold text-white hover:bg-primary-hover"
+            className="btn-primary mt-6"
             href="/kdp-cover-calculator"
           >
             Open KDP Cover Calculator
