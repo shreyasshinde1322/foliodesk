@@ -1,6 +1,12 @@
 "use client";
 
-import type { BrowserCapabilities, ConversionOptions, EncodeFormat, ResizeMode } from "@/engines/image";
+import type {
+  BrowserCapabilities,
+  ConversionOptions,
+  EncodeFormat,
+  PngCompression,
+  ResizeMode,
+} from "@/engines/image";
 import { ENCODE_FORMATS, IMAGE_FORMAT_META } from "@/engines/image";
 import { cn } from "@/lib/cn";
 
@@ -15,6 +21,12 @@ const RESIZE_MODES: Array<{ value: ResizeMode; label: string }> = [
   { value: "percentage", label: "Percentage" },
 ];
 
+const PNG_COMPRESSION: Array<{ value: PngCompression; label: string }> = [
+  { value: "fast", label: "Fastest (largest file)" },
+  { value: "balanced", label: "Balanced" },
+  { value: "maximum", label: "Maximum (smallest file)" },
+];
+
 export function OptionsPanel({
   options,
   capabilities,
@@ -24,8 +36,17 @@ export function OptionsPanel({
   capabilities: BrowserCapabilities | null;
   onChange: (patch: Partial<ConversionOptions>) => void;
 }) {
-  const isLossy = IMAGE_FORMAT_META[options.outputFormat].lossy;
-  const encodeSupport = capabilities?.encode ?? { jpg: true, png: true, webp: true, avif: true };
+  const encodeSupport: Record<EncodeFormat, boolean> = capabilities?.encode ?? {
+    jpg: true,
+    png: true,
+    webp: true,
+    avif: true,
+  };
+  const format = options.outputFormat;
+
+  const showQuality = format === "jpg" || format === "webp" || format === "avif";
+  const showPngCompression = format === "png";
+  const showBackgroundColor = format === "jpg";
 
   return (
     <div className="rounded-2xl border border-border bg-white p-5">
@@ -33,10 +54,10 @@ export function OptionsPanel({
 
       <fieldset className="mt-4">
         <legend className="text-sm font-semibold text-text">Output format</legend>
-        <div className="mt-2 grid grid-cols-2 gap-2 sm:grid-cols-4">
-          {ENCODE_FORMATS.map((format: EncodeFormat) => {
-            const supported = encodeSupport[format];
-            const selected = options.outputFormat === format;
+        <div className="mt-2 grid grid-cols-2 gap-2 sm:grid-cols-3">
+          {ENCODE_FORMATS.map((output: EncodeFormat) => {
+            const supported = encodeSupport[output];
+            const selected = options.outputFormat === output;
             return (
               <button
                 aria-pressed={selected}
@@ -48,24 +69,16 @@ export function OptionsPanel({
                   !supported && "cursor-not-allowed opacity-50",
                 )}
                 disabled={!supported}
-                key={format}
-                onClick={() => onChange({ outputFormat: format })}
+                key={output}
+                onClick={() => onChange({ outputFormat: output })}
                 title={
                   supported
-                    ? IMAGE_FORMAT_META[format].label
-                    : `${IMAGE_FORMAT_META[format].label} is not supported by this browser`
+                    ? IMAGE_FORMAT_META[output].label
+                    : `${IMAGE_FORMAT_META[output].label} is not supported by this browser`
                 }
                 type="button"
               >
-                {IMAGE_FORMAT_META[format].label}
-                <span
-                  className={cn(
-                    "mt-0.5 block text-[10px] font-normal",
-                    selected ? "text-primary/80" : "text-muted",
-                  )}
-                >
-                  {format === "png" ? "Lossless" : "Lossy"}
-                </span>
+                {IMAGE_FORMAT_META[output].label}
               </button>
             );
           })}
@@ -77,7 +90,7 @@ export function OptionsPanel({
         ) : null}
       </fieldset>
 
-      {isLossy ? (
+      {showQuality ? (
         <div className="mt-5">
           <div className="flex items-center justify-between">
             <label className="text-sm font-semibold text-text" htmlFor="image-quality">
@@ -96,6 +109,29 @@ export function OptionsPanel({
             value={options.quality}
           />
           <p className="mt-1 text-xs text-muted">Lower size ↔ Higher quality</p>
+        </div>
+      ) : null}
+
+      {showPngCompression ? (
+        <div className="mt-5">
+          <label className="text-sm font-semibold text-text" htmlFor="image-png-compression">
+            Compression
+          </label>
+          <select
+            className={cn(fieldClass, "mt-1")}
+            id="image-png-compression"
+            onChange={(event) => onChange({ pngCompression: event.target.value as PngCompression })}
+            value={options.pngCompression}
+          >
+            {PNG_COMPRESSION.map((level) => (
+              <option key={level.value} value={level.value}>
+                {level.label}
+              </option>
+            ))}
+          </select>
+          <p className="mt-2 text-xs text-muted">
+            PNG is always lossless. Higher compression produces smaller files but takes longer.
+          </p>
         </div>
       ) : null}
 
@@ -193,21 +229,22 @@ export function OptionsPanel({
             Maintain aspect ratio
           </label>
         ) : null}
+
+        {options.resizeMode === "percentage" && (options.percentage ?? 100) > 100 ? (
+          <label className="mt-2 flex items-center gap-2 text-sm text-muted">
+            <input
+              checked={options.allowUpscale}
+              className="h-4 w-4 rounded accent-[var(--primary)]"
+              onChange={(event) => onChange({ allowUpscale: event.target.checked })}
+              type="checkbox"
+            />
+            Allow upscaling (only shrink by default)
+          </label>
+        ) : null}
       </div>
 
-      <details className="group mt-5">
-        <summary className="cursor-pointer list-none text-sm font-semibold text-text marker:content-none [&::-webkit-details-marker]:hidden">
-          <span className="flex items-center justify-between">
-            Advanced options
-            <span
-              aria-hidden="true"
-              className="text-muted transition-transform duration-[var(--ease-fast)] group-open:rotate-180"
-            >
-              ▾
-            </span>
-          </span>
-        </summary>
-        <div className="mt-3">
+      {showBackgroundColor ? (
+        <div className="mt-5">
           <label className="text-sm font-semibold text-text" htmlFor="image-background">
             Background color
           </label>
@@ -227,11 +264,11 @@ export function OptionsPanel({
             />
           </div>
           <p className="mt-2 text-xs leading-relaxed text-muted">
-            Used when converting transparent images to JPG. Transparent areas are
-            flattened onto this color. PNG, WebP, and AVIF keep transparency.
+            Used when converting transparent images to JPG. Transparent areas
+            are flattened onto this color.
           </p>
         </div>
-      </details>
+      ) : null}
     </div>
   );
 }

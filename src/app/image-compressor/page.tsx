@@ -1,15 +1,15 @@
-import { ImageConverter } from "@/components/image/ImageConverter";
+import { ImageCompressor } from "@/components/image/ImageCompressor";
 import { ToolPageLayout } from "@/components/layout/ToolPageShell";
-import { IMAGE_CONVERTER_CONTENT } from "@/data/tools/image-converter.content";
+import { IMAGE_COMPRESSOR_CONTENT } from "@/data/tools/image-compressor.content";
 import { metadataFromSeo } from "@/lib/seo/metadata";
 import { SITE } from "@/lib/site";
 
-const content = IMAGE_CONVERTER_CONTENT;
+const content = IMAGE_COMPRESSOR_CONTENT;
 const tool = content.tool;
 
 export const metadata = metadataFromSeo(tool.seo);
 
-export default function ImageConverterPage() {
+export default function ImageCompressorPage() {
   const jsonLd = [
     {
       "@context": "https://schema.org",
@@ -59,7 +59,7 @@ export default function ImageConverterPage() {
         ]}
         faqs={content.faqs}
         features={content.features}
-        formats="Inputs: JPG, PNG, WebP, GIF, AVIF, HEIC, HEIF, PSD, BMP, ICO, SVG. Outputs: JPG, PNG, WebP, AVIF."
+        formats="Inputs: JPG, PNG, WebP, GIF, AVIF, HEIC, HEIF, PSD, BMP, ICO, SVG. Outputs: WebP, JPG, or the original format."
         guideSlugs={[]}
         howItWorks={content.howItWorks}
         lede={content.lede}
@@ -67,7 +67,7 @@ export default function ImageConverterPage() {
         tool={tool}
         why={content.why}
       >
-        <ImageConverter />
+        <ImageCompressor />
       </ToolPageLayout>
     </>
   );

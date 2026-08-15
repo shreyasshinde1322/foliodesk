@@ -1,5 +1,5 @@
 import sharp from "sharp";
-import type { DecodedBitmap, EncodeFormat, ImageCodec } from "@/engines/image";
+import type { DecodedBitmap, EncodeFormat, EncodeOptions, ImageCodec } from "@/engines/image";
 
 /**
  * Node implementation of `ImageCodec` used only by tests. It mirrors what the
@@ -41,6 +41,7 @@ async function encode(
   bitmap: DecodedBitmap,
   format: EncodeFormat,
   quality: number,
+  encodeOptions?: EncodeOptions,
 ): Promise<{ data: Uint8Array; mimeType: string }> {
   const pipeline = sharp(Buffer.from(bitmap.data), {
     raw: { width: bitmap.width, height: bitmap.height, channels: 4 },
@@ -48,7 +49,7 @@ async function encode(
   let buffer: Buffer;
   let mimeType = "image/jpeg";
   if (format === "png") {
-    buffer = await pipeline.png().toBuffer();
+    buffer = await pipeline.png({ compressionLevel: pngLevel(encodeOptions?.pngCompression) }).toBuffer();
     mimeType = "image/png";
   } else if (format === "webp") {
     buffer = await pipeline.webp({ quality }).toBuffer();
@@ -64,6 +65,12 @@ async function encode(
     data: new Uint8Array(buffer.buffer, buffer.byteOffset, buffer.byteLength),
     mimeType,
   };
+}
+
+function pngLevel(compression: EncodeOptions["pngCompression"]): number {
+  if (compression === "fast") return 1;
+  if (compression === "maximum") return 9;
+  return 6;
 }
 
 function toClamped(buffer: Buffer): Uint8ClampedArray {

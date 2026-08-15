@@ -3,6 +3,7 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { FolderDown, ShieldCheck } from "lucide-react";
 import {
+  IMAGE_FORMAT_META,
   ImageProcessingError,
   analyzeImage,
   createBrowserCodec,
@@ -11,7 +12,6 @@ import {
   encodeBitmap,
   estimateWorkingBytes,
   formatMegabytes,
-  getBrowserCapabilities,
   hasAlpha,
   isHeavy,
   normalizeConversionOptions,
@@ -19,8 +19,8 @@ import {
   transformBitmap,
 } from "@/engines/image";
 import type {
-  BrowserCapabilities,
   ConversionOptions,
+  EncodeFormat,
   ImageCodec,
   ImageFormat,
   JobStage,
@@ -28,31 +28,71 @@ import type {
 import { downloadBlob } from "@/lib/export/download";
 import { formatBytes } from "@/lib/format";
 import { cn } from "@/lib/cn";
+import { CompressOptions, type CompressSettings } from "./CompressOptions";
 import { FileQueue } from "./FileQueue";
 import { LiveConversionBadge } from "./LiveConversionBadge";
-import { OptionsPanel } from "./OptionsPanel";
 import { PreviewPanel } from "./PreviewPanel";
 import { UploadZone } from "./UploadZone";
 import type { QueueItem } from "./queue";
 import { isInProgress, toFriendlyMessage } from "./queue";
 
+const DEFAULT_SETTINGS: CompressSettings = {
+  mode: "webp",
+  quality: 75,
+  background: "#ffffff",
+};
+
+function keepFormatFor(source: ImageFormat | null): EncodeFormat {
+  switch (source) {
+    case "jpg":
+      return "jpg";
+    case "png":
+      return "png";
+    case "webp":
+      return "webp";
+    case "avif":
+      return "avif";
+    case "heic":
+    case "heif":
+      return "webp";
+    default:
+      return "png";
+  }
+}
+
+function buildOptions(settings: CompressSettings, source: ImageFormat | null): ConversionOptions {
+  const base = normalizeConversionOptions({
+    background: settings.background,
+    quality: settings.quality,
+    resizeMode: "keep",
+  });
+  if (settings.mode === "webp") return { ...base, outputFormat: "webp" };
+  if (settings.mode === "jpg") return { ...base, outputFormat: "jpg" };
+  const format = keepFormatFor(source);
+  return {
+    ...base,
+    outputFormat: format,
+    pngCompression: format === "png" ? "maximum" : base.pngCompression,
+  };
+}
+
 let idSequence = 0;
 function nextId(): string {
   idSequence += 1;
-  const random = typeof crypto !== "undefined" && crypto.randomUUID ? crypto.randomUUID() : Math.random().toString(36).slice(2);
+  const random =
+    typeof crypto !== "undefined" && crypto.randomUUID
+      ? crypto.randomUUID()
+      : Math.random().toString(36).slice(2);
   return `img-${Date.now().toString(36)}-${random}-${idSequence}`;
 }
 
-export function ImageConverter() {
+export function ImageCompressor() {
   const [items, setItems] = useState<QueueItem[]>([]);
-  const [options, setOptions] = useState<ConversionOptions>(() =>
-    normalizeConversionOptions({ outputFormat: "webp" }),
-  );
-  const [capabilities, setCapabilities] = useState<BrowserCapabilities | null>(null);
+  const [settings, setSettings] = useState<CompressSettings>(DEFAULT_SETTINGS);
   const [selectedId, setSelectedId] = useState<string | null>(null);
 
   const itemsRef = useRef<QueueItem[]>([]);
-  const optionsRef = useRef<ConversionOptions>(options);
+  const settingsRef = useRef<CompressSettings>(settings);
   const codecRef = useRef<ImageCodec | null>(null);
   const busyRef = useRef(false);
   const cancelledRef = useRef<Set<string>>(new Set());
@@ -64,17 +104,13 @@ export function ImageConverter() {
   }, [items]);
 
   useEffect(() => {
-    optionsRef.current = options;
-  }, [options]);
+    settingsRef.current = settings;
+  }, [settings]);
 
   useEffect(() => {
     codecRef.current = createBrowserCodec();
-    let cancelled = false;
-    void getBrowserCapabilities().then((caps) => {
-      if (!cancelled) setCapabilities(caps);
-    });
     return () => {
-      cancelled = true;
+      codecRef.current = null;
     };
   }, []);
 
@@ -126,19 +162,23 @@ export function ImageConverter() {
                   height: analyzed.bitmap.height,
                   hasAlpha: hasAlpha(analyzed.bitmap),
                   heavy: isHeavy(analyzed.bitmap.width, analyzed.bitmap.height),
-                  estimatedBytes: estimateWorkingBytes(analyzed.bitmap.width, analyzed.bitmap.height),
+                  estimatedBytes: estimateWorkingBytes(
+                    analyzed.bitmap.width,
+                    analyzed.bitmap.height,
+                  ),
                 }
               : entry,
           ),
         );
 
+        const itemOptions = buildOptions(settingsRef.current, analyzed.sourceFormat);
         assertNotCancelled(id);
         setStage(id, "processing");
-        const { bitmap: working } = await transformBitmap(analyzed.bitmap, optionsRef.current, codec);
+        const { bitmap: working } = await transformBitmap(analyzed.bitmap, itemOptions, codec);
         assertNotCancelled(id);
 
         setStage(id, "encoding");
-        const result = await encodeBitmap(working, item.name, optionsRef.current, codec);
+        const result = await encodeBitmap(working, item.name, itemOptions, codec);
         assertNotCancelled(id);
 
         const blob = new Blob([new Uint8Array(result.data)], { type: result.mimeType });
@@ -150,8 +190,7 @@ export function ImageConverter() {
           ),
         );
       } catch (error) {
-        const code =
-          error instanceof ImageProcessingError ? error.code : "convert-failed";
+        const code = error instanceof ImageProcessingError ? error.code : "convert-failed";
         if (code === "cancelled") {
           setStage(id, "cancelled");
         } else {
@@ -254,9 +293,9 @@ export function ImageConverter() {
     );
   }, []);
 
-  const updateOptions = useCallback(
-    (patch: Partial<ConversionOptions>) => {
-      setOptions((prev) => normalizeConversionOptions({ ...prev, ...patch }));
+  const updateSettings = useCallback(
+    (patch: Partial<CompressSettings>) => {
+      setSettings((prev) => ({ ...prev, ...patch }));
       if (reconvertTimerRef.current) clearTimeout(reconvertTimerRef.current);
       reconvertTimerRef.current = setTimeout(() => {
         reconvertTimerRef.current = null;
@@ -294,7 +333,10 @@ export function ImageConverter() {
   const downloadOne = useCallback((id: string) => {
     const item = itemsRef.current.find((entry) => entry.id === id);
     if (!item?.result) return;
-    downloadBlob(new Blob([new Uint8Array(item.result.data)], { type: item.result.mimeType }), item.result.outputName);
+    downloadBlob(
+      new Blob([new Uint8Array(item.result.data)], { type: item.result.mimeType }),
+      item.result.outputName,
+    );
   }, []);
 
   const downloadAll = useCallback(() => {
@@ -317,37 +359,49 @@ export function ImageConverter() {
       data: entry.result!.data,
     }));
     const zip = createZip(entries);
-    downloadBlob(new Blob([new Uint8Array(zip)], { type: "application/zip" }), "folio-desk-images.zip");
+    downloadBlob(
+      new Blob([new Uint8Array(zip)], { type: "application/zip" }),
+      "folio-desk-compressed.zip",
+    );
   }, []);
 
   const counts = useMemo(() => {
     const complete = items.filter((entry) => entry.status === "complete").length;
     const failed = items.filter((entry) => entry.status === "failed").length;
     const processing = items.filter((entry) => isInProgress(entry.status)).length;
-    const totalBytes = items.reduce(
-      (sum, entry) => sum + (entry.result?.sizeBytes ?? 0),
-      0,
-    );
-    return { complete, failed, processing, totalBytes };
+    const resultBytes = items.reduce((sum, entry) => sum + (entry.result?.sizeBytes ?? 0), 0);
+    const originalBytes = items.reduce((sum, entry) => sum + entry.originalSize, 0);
+    const savedBytes = originalBytes - resultBytes;
+    const savedPercent = originalBytes > 0 ? Math.round((savedBytes / originalBytes) * 100) : 0;
+    return { complete, failed, processing, resultBytes, originalBytes, savedBytes, savedPercent };
   }, [items]);
 
   const selectedItem =
-    items.find((entry) => entry.id === selectedId) ??
-    items[0] ??
-    null;
-  const badgeSource: ImageFormat | null =
-    selectedItem?.sourceFormat ?? items[0]?.sourceFormat ?? null;
+    items.find((entry) => entry.id === selectedId) ?? items[0] ?? null;
+  const badgeSource: ImageFormat | null = selectedItem?.sourceFormat ?? null;
+  const badgeOutput: EncodeFormat =
+    selectedItem?.result?.format ??
+    (settings.mode === "webp"
+      ? "webp"
+      : settings.mode === "jpg"
+        ? "jpg"
+        : keepFormatFor(badgeSource));
+
+  const mappedOutput: EncodeFormat | null =
+    settings.mode === "original" && badgeSource ? keepFormatFor(badgeSource) : null;
+  const selectedOutputLossless =
+    mappedOutput !== null && !IMAGE_FORMAT_META[mappedOutput].lossy;
 
   const heavyWarning =
     selectedItem?.heavy && selectedItem.estimatedBytes
-      ? `This image needs about ${formatMegabytes(selectedItem.estimatedBytes)} of browser memory to convert. Close other heavy browser tabs if you hit memory issues.`
+      ? `This image needs about ${formatMegabytes(selectedItem.estimatedBytes)} of browser memory to compress. Close other heavy browser tabs if you hit memory issues.`
       : null;
 
   return (
     <div className="mt-6 rounded-[var(--radius-lg)] border border-border bg-white p-5 shadow-[var(--shadow-card)] sm:p-6">
       <div className="flex flex-wrap items-center justify-between gap-3">
-        <h2 className="font-serif text-2xl font-semibold text-text">Image Converter</h2>
-        <LiveConversionBadge output={options.outputFormat} source={badgeSource} />
+        <h2 className="font-serif text-2xl font-semibold text-text">Image Compressor</h2>
+        <LiveConversionBadge output={badgeOutput} source={badgeSource} />
       </div>
 
       <div className="mt-5 space-y-4">
@@ -355,14 +409,14 @@ export function ImageConverter() {
 
         <p className="flex items-start gap-2 rounded-2xl border border-success/25 bg-success/[0.04] px-4 py-3 text-xs leading-relaxed text-muted">
           <ShieldCheck className="mt-0.5 h-4 w-4 shrink-0 text-success" />
-          Images are processed in your browser and are not uploaded to our
+          Images are compressed in your browser and are not uploaded to our
           servers.
         </p>
 
-        <OptionsPanel
-          capabilities={capabilities}
-          onChange={updateOptions}
-          options={options}
+        <CompressOptions
+          onChange={updateSettings}
+          selectedOutputLossless={selectedOutputLossless}
+          settings={settings}
         />
 
         {items.length ? (
@@ -387,22 +441,45 @@ export function ImageConverter() {
             ) : null}
 
             <PreviewPanel
-              background={options.background}
+              background={settings.background}
               item={selectedItem}
               items={items}
               onSelect={setSelectedId}
-              outputFormat={options.outputFormat}
+              outputFormat={badgeOutput}
             />
 
             <div className="rounded-2xl border border-border bg-paper-deep/40 p-4">
               <div className="flex items-center justify-between text-sm">
                 <span className="text-muted">
-                  {counts.complete} of {items.length} converted
+                  {counts.complete} of {items.length} compressed
                 </span>
                 {counts.complete ? (
-                  <span className="font-semibold text-text">{formatBytes(counts.totalBytes)}</span>
+                  <span
+                    className={cn(
+                      "font-semibold",
+                      counts.savedPercent > 0
+                        ? "text-success"
+                        : counts.savedPercent < 0
+                          ? "text-error"
+                          : "text-muted",
+                    )}
+                  >
+                    {counts.savedPercent > 0
+                      ? `−${formatBytes(counts.savedBytes)} (${counts.savedPercent}%)`
+                      : counts.savedPercent < 0
+                        ? `+${formatBytes(-counts.savedBytes)} (${-counts.savedPercent}%)`
+                        : "No size change"}
+                  </span>
                 ) : null}
               </div>
+              {counts.complete ? (
+                <div className="mt-1 flex items-center justify-between text-xs text-muted">
+                  <span>
+                    {formatBytes(counts.originalBytes)} → {formatBytes(counts.resultBytes)}
+                  </span>
+                  <span>total</span>
+                </div>
+              ) : null}
               <button
                 className={cn(
                   "btn-primary mt-3 w-full",
@@ -413,7 +490,7 @@ export function ImageConverter() {
                 type="button"
               >
                 <FolderDown className="h-4 w-4" />
-                {counts.complete === 1 ? "Download image" : "Download all (.zip)"}
+                {counts.complete === 1 ? "Download compressed image" : "Download all (.zip)"}
               </button>
             </div>
           </>

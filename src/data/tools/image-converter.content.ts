@@ -7,13 +7,17 @@ export const IMAGE_CONVERTER_CONTENT = {
   tool,
   eyebrow: "Image Tools",
   heading: "Image Converter",
-  lede: "Convert images to JPG, PNG, WebP, or AVIF entirely in your browser. Quality, resizing, and batch conversion included.",
+  lede: "Convert images to JPG, PNG, WebP, or AVIF entirely in your browser. Quality control, resizing, and batch conversion included.",
   intro:
-    "Upload one or more images and choose an output format. Every conversion happens on your device using the browser's built-in image decoding and encoding — your images are never uploaded to a server.",
+    "Upload one or more images and choose an output format. Every conversion happens on your device — including JPG/PNG/WebP/AVIF encoding and HEIC and PSD decoding. Your images are never uploaded to a server.",
   features: [
     {
-      title: "Four output formats",
-      body: "Convert to JPG, PNG, WebP, or AVIF. Output options that your browser cannot encode are disabled with an explanation instead of a silent fallback.",
+      title: "Four high-quality output formats",
+      body: "Convert to JPG, PNG, WebP, or AVIF — the formats every modern browser can encode. Output options your browser cannot encode are disabled with an explanation instead of a silent fallback.",
+    },
+    {
+      title: "Eleven input formats",
+      body: "Upload JPG, PNG, WebP, GIF, AVIF, HEIC, HEIF, PSD, BMP, ICO, or SVG files. PSD and HEIC are decoded on your device via WebAssembly — nothing is uploaded.",
     },
     {
       title: "Batch conversion",
@@ -21,7 +25,7 @@ export const IMAGE_CONVERTER_CONTENT = {
     },
     {
       title: "Quality control",
-      body: "For JPG, WebP, and AVIF, set quality from 10 to 100. PNG output stays lossless.",
+      body: "For JPG, WebP, and AVIF, set quality from 10 to 100. PNG output stays pixel-perfect, with adjustable compression effort.",
     },
     {
       title: "Built-in resizing",
@@ -39,7 +43,7 @@ export const IMAGE_CONVERTER_CONTENT = {
   howItWorks: [
     {
       title: "Add images",
-      body: "Drag and drop files or choose them from your device. Multiple files are supported.",
+      body: "Drag and drop files or choose them from your device. JPG, PNG, WebP, GIF, AVIF, HEIC, HEIF, PSD, BMP, ICO, and SVG are supported. Multiple files are allowed.",
     },
     {
       title: "Set options",
@@ -47,7 +51,7 @@ export const IMAGE_CONVERTER_CONTENT = {
     },
     {
       title: "Convert",
-      body: "Each image is decoded, transformed, and re-encoded on your device.",
+      body: "Each image is detected, decoded, transformed, and re-encoded on your device, with a live per-file status.",
     },
     {
       title: "Download",
@@ -65,12 +69,17 @@ export const IMAGE_CONVERTER_CONTENT = {
     },
   ],
   privacy:
-    "This tool processes images entirely in your browser using the browser's image decoder and encoder. Your files are not uploaded to FolioDesk servers, are not stored, and are not used for training. When you leave the page, no copy of your images remains in the app.",
+    "This tool processes images entirely in your browser. Decoding, resizing, and encoding all run on your device, including HEIC and PSD decoding via WebAssembly. Your files are not uploaded to FolioDesk servers, are not stored, and are not used for training. When you leave the page, no copy of your images remains in the app.",
   faqs: [
     {
       question: "Is Image Converter really free and private?",
       answer:
         "Yes. Files are decoded and re-encoded on your device with browser APIs. They are never uploaded to FolioDesk or stored anywhere.",
+    },
+    {
+      question: "Can I convert HEIC, PSD, BMP, or ICO files?",
+      answer:
+        "Yes. HEIC/HEIF and PSD files are decoded on your device with WebAssembly, and BMP and ICO have built-in decoders. After decoding, any output format is available.",
     },
     {
       question: "Why is AVIF sometimes disabled?",

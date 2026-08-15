@@ -11,6 +11,12 @@ const FORMAT_TO_FILE: Record<string, FileFormat> = {
   webp: "webp",
   gif: "gif",
   avif: "avif",
+  heic: "image",
+  heif: "image",
+  psd: "image",
+  bmp: "image",
+  ico: "image",
+  svg: "image",
 };
 
 export function LiveConversionBadge({

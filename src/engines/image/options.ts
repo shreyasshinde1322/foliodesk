@@ -1,5 +1,5 @@
 import { ENCODE_FORMATS } from "./formats";
-import type { ConversionOptions, EncodeFormat } from "./types";
+import type { ConversionOptions, EncodeFormat, PngCompression } from "./types";
 
 export const DEFAULT_OPTIONS: ConversionOptions = {
   outputFormat: "webp",
@@ -10,6 +10,8 @@ export const DEFAULT_OPTIONS: ConversionOptions = {
   height: undefined,
   percentage: 100,
   maintainAspectRatio: true,
+  allowUpscale: false,
+  pngCompression: "balanced",
 };
 
 export function normalizeConversionOptions(
@@ -25,6 +27,8 @@ export function normalizeConversionOptions(
     height: clampPositiveInt(input.height),
     percentage: clampPercentage(input.percentage),
     maintainAspectRatio: input.maintainAspectRatio ?? true,
+    allowUpscale: input.allowUpscale ?? false,
+    pngCompression: clampPngCompression(input.pngCompression),
   };
 }
 
@@ -47,6 +51,10 @@ export function normalizeHexColor(value: string | undefined): string {
   const match = /^#([0-9a-fA-F]{6})$/.exec((value ?? "").trim());
   if (match) return `#${match[1].toLowerCase()}`;
   return DEFAULT_OPTIONS.background;
+}
+
+function clampPngCompression(value: PngCompression | undefined): PngCompression {
+  return value === "fast" || value === "maximum" ? value : "balanced";
 }
 
 function toEncodeFormat(value: EncodeFormat | undefined): EncodeFormat | undefined {

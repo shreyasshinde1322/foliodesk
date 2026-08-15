@@ -1,6 +1,6 @@
 "use client";
 
-import { ArrowRight } from "lucide-react";
+import { ArrowRight, ChevronLeft, ChevronRight } from "lucide-react";
 import type { EncodeFormat } from "@/engines/image";
 import { IMAGE_FORMAT_META } from "@/engines/image";
 import { formatBytes, formatDimensions } from "@/lib/format";
@@ -10,12 +10,16 @@ import { formatSupportsAlpha } from "./queue";
 
 export function PreviewPanel({
   item,
+  items,
   outputFormat,
   background,
+  onSelect,
 }: {
   item: QueueItem | null;
+  items: QueueItem[];
   outputFormat: EncodeFormat;
   background: string;
+  onSelect: (id: string) => void;
 }) {
   if (!item) {
     return (
@@ -28,6 +32,12 @@ export function PreviewPanel({
   const convertedSupportsAlpha = formatSupportsAlpha(outputFormat);
   const showConvertedCheckerboard = Boolean(item.hasAlpha && convertedSupportsAlpha);
   const flattenWarning = outputFormat === "jpg" && item.hasAlpha;
+  const isWorking = ["analyzing", "decoding", "processing", "encoding"].includes(item.status);
+
+  const currentIndex = items.findIndex((entry) => entry.id === item.id);
+  const prevItem = currentIndex > 0 ? items[currentIndex - 1] : null;
+  const nextItem =
+    currentIndex >= 0 && currentIndex < items.length - 1 ? items[currentIndex + 1] : null;
 
   return (
     <div className="rounded-2xl border border-border bg-white p-5">
@@ -64,8 +74,56 @@ export function PreviewPanel({
         </p>
       ) : null}
 
+      {item.status === "cancelled" ? (
+        <p className="mt-4 text-center text-sm text-muted">
+          Conversion cancelled. Use the retry button to run it again.
+        </p>
+      ) : null}
+
       {item.status === "failed" ? (
         <p className="mt-4 text-center text-sm text-error">{item.error}</p>
+      ) : null}
+
+      {isWorking ? (
+        <p className="mt-4 text-center text-xs text-muted">Working…</p>
+      ) : null}
+
+      {items.length > 1 ? (
+        <div className="mt-5 flex items-center justify-between gap-3 border-t border-border pt-4">
+          <button
+            aria-label="Preview previous image"
+            className={cn(
+              "inline-flex items-center gap-1 rounded-[var(--radius-sm)] border px-3 py-1.5 text-sm font-semibold transition-colors",
+              prevItem
+                ? "border-border text-text hover:border-primary/40 hover:text-primary"
+                : "cursor-not-allowed border-border opacity-40",
+            )}
+            disabled={!prevItem}
+            onClick={() => prevItem && onSelect(prevItem.id)}
+            type="button"
+          >
+            <ChevronLeft className="h-4 w-4" />
+            Previous
+          </button>
+          <span className="text-xs font-semibold text-muted">
+            Image {currentIndex + 1} of {items.length}
+          </span>
+          <button
+            aria-label="Preview next image"
+            className={cn(
+              "inline-flex items-center gap-1 rounded-[var(--radius-sm)] border px-3 py-1.5 text-sm font-semibold transition-colors",
+              nextItem
+                ? "border-border text-text hover:border-primary/40 hover:text-primary"
+                : "cursor-not-allowed border-border opacity-40",
+            )}
+            disabled={!nextItem}
+            onClick={() => nextItem && onSelect(nextItem.id)}
+            type="button"
+          >
+            Next
+            <ChevronRight className="h-4 w-4" />
+          </button>
+        </div>
       ) : null}
     </div>
   );

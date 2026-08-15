@@ -15,7 +15,7 @@ const MAX_PERCENTAGE = 500;
  * - `exact`: force to width/height. With `maintainAspectRatio` the image is
  *   scaled to fit inside the requested box (contain) without distortion.
  * - `max-width` / `max-height`: downscale only, preserving aspect ratio.
- * - `percentage`: scale by 1-500%.
+ * - `percentage`: scale by 1-500%, never above 100% unless `allowUpscale`.
  */
 export function computeTargetSize(
   sourceWidth: number,
@@ -71,6 +71,7 @@ export function computeTargetSize(
   if (mode === "percentage") {
     const pct = clampPercentage(options.percentage ?? 100);
     const ratio = pct / 100;
+    if (pct > 100 && options.allowUpscale !== true) return safeSource;
     return {
       width: clampDimension(Math.round(safeSource.width * ratio)),
       height: clampDimension(Math.round(safeSource.height * ratio)),

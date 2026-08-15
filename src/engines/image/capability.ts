@@ -15,10 +15,24 @@ const SAMPLE_WEBP =
   "UklGRjwAAABXRUJQVlA4IDAAAADQAQCdASoBAAEAAUAmJaACdLoB+AADsAD+8ut//NgVzXPv9//S4P0uD9Lg/9KQAAA=";
 const SAMPLE_AVIF =
   "AAAAHGZ0eXBhdmlmAAAAAG1pZjFhdmlmbWlhZgAAAWBtZXRhAAAAAAAAACFoZGxyAAAAAAAAAABwaWN0AAAAAAAAAAAAAAAAAAAAADRpbG9jAAAAAERAAAIAAQAAAAABhAABAAAAAAAAACQAAgAAAAABqAABAAAAAAAAABQAAAA4aWluZgAAAAAAAgAAABVpbmZlAgAAAAABAABhdjAxAAAAABVpbmZlAgAAAAACAABhdjAxAAAAAA5waXRtAAAAAAABAAAAn2lwcnAAAAB6aXBjbwAAAAxhdjFDgSACAAAAABRpc3BlAAAAAAAAAAEAAAABAAAADnBpeGkAAAAAAQgAAAAMYXYxQ4EAHAAAAAA4YXV4QwAAAAB1cm46bXBlZzptcGVnQjpjaWNwOnN5c3RlbXM6YXV4aWxpYXJ5OmFscGhhAAAAAB1pcG1hAAAAAAAAAAIAAQOBAgMAAgSEAgOFAAAAGmlyZWYAAAAAAAAADmF1eGwAAgABAAEAAABAbWRhdBIACgc4AAaQENBpMhcZQmMEwAA0AACQQMkcYUuNGtYQVLH7IBIACgQYAAYVMgoYAAABAAIhG6Ng";
+const SAMPLE_SVG =
+  'PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIyIiBoZWlnaHQ9IjIiPjxyZWN0IHdpZHRoPSIyIiBoZWlnaHQ9IjIiIGZpbGw9InJlZCIvPjwvc3ZnPg==';
 
 export const UNSUPPORTED_CAPABILITIES: BrowserCapabilities = {
   encode: { jpg: true, png: true, webp: false, avif: false },
-  decode: { jpg: true, png: true, webp: false, gif: false, avif: false },
+  decode: {
+    jpg: true,
+    png: true,
+    webp: false,
+    gif: false,
+    avif: false,
+    heic: false,
+    heif: false,
+    psd: false,
+    bmp: false,
+    ico: false,
+    svg: false,
+  },
   workers: false,
 };
 
@@ -48,10 +62,23 @@ function canEncode(format: EncodeFormat, test: (type: string) => boolean): boole
   return test(`image/${format}`);
 }
 
+async function canLoadHeicModule(): Promise<boolean> {
+  try {
+    await import("heic2any");
+    return true;
+  } catch {
+    return false;
+  }
+}
+
 /**
  * Probe the actual capabilities of the current browser. Runs on the client
  * only (never during SSR). Output formats that cannot be encoded are disabled
  * in the UI instead of silently producing a different format.
+ *
+ * `heic`/`heif` decode is reported as "available" when the heic2any module can
+ * be loaded (the module's main-thread requirement is always met in the
+ * browser). `psd` requires Workers plus the @webtoon/psd module.
  */
 export async function getBrowserCapabilities(): Promise<BrowserCapabilities> {
   if (typeof document === "undefined") return UNSUPPORTED_CAPABILITIES;
@@ -70,12 +97,17 @@ export async function getBrowserCapabilities(): Promise<BrowserCapabilities> {
     }
   };
 
-  const [pngDecode, gifDecode, webpDecode, avifDecode] = await Promise.all([
+  const [pngDecode, gifDecode, webpDecode, avifDecode, svgDecode, heicModule] = await Promise.all([
     canDecode(decodeSample(SAMPLE_PNG)),
     canDecode(decodeSample(SAMPLE_GIF)),
     canDecode(decodeSample(SAMPLE_WEBP)),
     canDecode(decodeSample(SAMPLE_AVIF)),
+    canDecode(decodeSample(SAMPLE_SVG)),
+    canLoadHeicModule(),
   ]);
+
+  const workers = typeof Worker !== "undefined";
+  const psdDecode = workers;
 
   return {
     encode: {
@@ -90,7 +122,13 @@ export async function getBrowserCapabilities(): Promise<BrowserCapabilities> {
       webp: webpDecode,
       gif: gifDecode,
       avif: avifDecode,
+      heic: heicModule,
+      heif: heicModule,
+      psd: psdDecode,
+      bmp: true,
+      ico: true,
+      svg: svgDecode,
     },
-    workers: typeof Worker !== "undefined",
+    workers,
   };
 }

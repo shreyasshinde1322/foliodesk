@@ -1,10 +1,11 @@
 "use client";
 
-import { AlertCircle, Check, Download, Loader2, RefreshCw, X } from "lucide-react";
+import { AlertCircle, Ban, Check, Download, Eye, Loader2, RefreshCw, X } from "lucide-react";
 import { IMAGE_FORMAT_META } from "@/engines/image";
 import { formatBytes, formatDimensions } from "@/lib/format";
 import { cn } from "@/lib/cn";
 import type { QueueItem } from "./queue";
+import { STAGE_LABEL, isInProgress } from "./queue";
 
 export function FileQueue({
   items,
@@ -12,6 +13,8 @@ export function FileQueue({
   onSelect,
   onRemove,
   onReconvert,
+  onCancel,
+  onCancelAll,
   onDownload,
   onClearAll,
 }: {
@@ -20,12 +23,15 @@ export function FileQueue({
   onSelect: (id: string) => void;
   onRemove: (id: string) => void;
   onReconvert: (id: string) => void;
+  onCancel: (id: string) => void;
+  onCancelAll: () => void;
   onDownload: (id: string) => void;
   onClearAll: () => void;
 }) {
   const complete = items.filter((item) => item.status === "complete").length;
   const failed = items.filter((item) => item.status === "failed").length;
-  const processing = items.filter((item) => item.status === "processing").length;
+  const processing = items.filter((item) => isInProgress(item.status)).length;
+  const showIndividualDownload = complete > 1;
 
   return (
     <div className="rounded-2xl border border-border bg-white">
@@ -51,23 +57,46 @@ export function FileQueue({
             </span>
           ) : null}
         </div>
-        <button
-          className="text-xs font-semibold text-muted transition-colors hover:text-error"
-          onClick={onClearAll}
-          type="button"
-        >
-          Clear all
-        </button>
+        <div className="flex items-center gap-3">
+          {processing ? (
+            <button
+              className="inline-flex items-center gap-1 text-xs font-semibold text-muted transition-colors hover:text-error"
+              onClick={onCancelAll}
+              type="button"
+            >
+              <Ban className="h-3 w-3" />
+              Cancel all
+            </button>
+          ) : null}
+          <button
+            className="text-xs font-semibold text-muted transition-colors hover:text-error"
+            onClick={onClearAll}
+            type="button"
+          >
+            Clear all
+          </button>
+        </div>
       </div>
 
       <ul className="divide-y divide-border">
         {items.map((item) => (
           <li key={item.id}>
             <div
+              aria-current={selectedId === item.id ? "true" : undefined}
+              aria-label={`View preview of ${item.name}`}
               className={cn(
-                "flex w-full items-center gap-3 px-4 py-3 text-left transition-colors hover:bg-paper-deep/40",
+                "flex w-full cursor-pointer items-center gap-3 px-4 py-3 text-left transition-colors hover:bg-paper-deep/40",
                 selectedId === item.id && "bg-primary-soft/40",
               )}
+              onClick={() => onSelect(item.id)}
+              onKeyDown={(event) => {
+                if (event.key === "Enter" || event.key === " ") {
+                  event.preventDefault();
+                  onSelect(item.id);
+                }
+              }}
+              role="button"
+              tabIndex={0}
             >
               <button
                 aria-label={`Preview ${item.name}`}
@@ -101,30 +130,48 @@ export function FileQueue({
                 </div>
               </div>
 
-              <div className="flex shrink-0 items-center gap-1.5">
-                {item.status === "complete" && item.result ? (
-                  <>
-                    <button
-                      aria-label={`Download ${item.result.outputName}`}
-                      className="btn-primary px-2.5 py-1.5 text-xs"
-                      onClick={() => onDownload(item.id)}
-                      type="button"
-                    >
-                      <Download className="h-3.5 w-3.5" />
-                      {formatBytes(item.result.sizeBytes)}
-                    </button>
-                    <button
-                      aria-label="Reconvert this image"
-                      className="rounded-[var(--radius-sm)] border border-border p-1.5 text-muted transition-colors hover:border-primary/40 hover:text-primary"
-                      onClick={() => onReconvert(item.id)}
-                      title="Reconvert with current options"
-                      type="button"
-                    >
-                      <RefreshCw className="h-3.5 w-3.5" />
-                    </button>
-                  </>
+              <div
+                className="flex shrink-0 items-center gap-1.5"
+                onClick={(event) => event.stopPropagation()}
+              >
+                <button
+                  aria-label={`View preview of ${item.name}`}
+                  className={cn(
+                    "inline-flex items-center gap-1.5 rounded-[var(--radius-sm)] border px-2.5 py-1.5 text-xs font-semibold transition-colors",
+                    selectedId === item.id
+                      ? "border-primary bg-primary-soft text-primary"
+                      : "border-border text-muted hover:border-primary/40 hover:text-text",
+                  )}
+                  onClick={() => onSelect(item.id)}
+                  title="View preview"
+                  type="button"
+                >
+                  <Eye className="h-3.5 w-3.5" />
+                  Preview
+                </button>
+                {item.status === "complete" && item.result && showIndividualDownload ? (
+                  <button
+                    aria-label={`Download ${item.result.outputName}`}
+                    className="btn-primary px-2.5 py-1.5 text-xs"
+                    onClick={() => onDownload(item.id)}
+                    type="button"
+                  >
+                    <Download className="h-3.5 w-3.5" />
+                    {formatBytes(item.result.sizeBytes)}
+                  </button>
                 ) : null}
-                {item.status === "failed" ? (
+                {isInProgress(item.status) ? (
+                  <button
+                    aria-label={`Cancel ${item.name}`}
+                    className="rounded-[var(--radius-sm)] p-1.5 text-muted transition-colors hover:text-error"
+                    onClick={() => onCancel(item.id)}
+                    title="Cancel"
+                    type="button"
+                  >
+                    <X className="h-4 w-4" />
+                  </button>
+                ) : null}
+                {item.status === "failed" || item.status === "cancelled" ? (
                   <button
                     aria-label="Retry this image"
                     className="rounded-[var(--radius-sm)] border border-border p-1.5 text-muted transition-colors hover:border-primary/40 hover:text-primary"
@@ -153,14 +200,22 @@ export function FileQueue({
 }
 
 function StatusLine({ item }: { item: QueueItem }) {
-  if (item.status === "queued") {
-    return <span className="text-xs text-muted">Queued</span>;
-  }
-  if (item.status === "processing") {
+  if (isInProgress(item.status)) {
     return (
       <span className="inline-flex items-center gap-1.5 text-xs font-medium text-primary">
         <Loader2 className="h-3 w-3 animate-spin" />
-        Converting…
+        {STAGE_LABEL[item.status]}…
+      </span>
+    );
+  }
+  if (item.status === "queued") {
+    return <span className="text-xs text-muted">{STAGE_LABEL.queued}</span>;
+  }
+  if (item.status === "cancelled") {
+    return (
+      <span className="inline-flex items-center gap-1.5 text-xs text-muted">
+        <Ban className="h-3 w-3" />
+        {STAGE_LABEL.cancelled}
       </span>
     );
   }

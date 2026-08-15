@@ -8,6 +8,8 @@ const base: ConversionOptions = {
   background: "#ffffff",
   resizeMode: "keep",
   maintainAspectRatio: true,
+  allowUpscale: false,
+  pngCompression: "balanced",
 };
 
 describe("resize math", () => {
@@ -46,12 +48,17 @@ describe("resize math", () => {
   });
 
   it("scales by percentage and clamps to 1-500", () => {
-    const options = { ...base, resizeMode: "percentage" as const, percentage: 150 };
+    const options = { ...base, resizeMode: "percentage" as const, percentage: 150, allowUpscale: true };
     expect(computeTargetSize(800, 400, options)).toEqual({ width: 1200, height: 600 });
-    const huge = { ...base, resizeMode: "percentage" as const, percentage: 1000 };
+    const huge = { ...base, resizeMode: "percentage" as const, percentage: 1000, allowUpscale: true };
     const big = computeTargetSize(100, 50, huge);
     expect(big.width).toBe(500);
     expect(big.height).toBe(250);
+  });
+
+  it("does not upscale by percentage unless allowUpscale is set", () => {
+    const options = { ...base, resizeMode: "percentage" as const, percentage: 150 };
+    expect(computeTargetSize(800, 400, options)).toEqual({ width: 800, height: 400 });
   });
 
   it("never returns zero dimensions", () => {

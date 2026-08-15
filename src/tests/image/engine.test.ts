@@ -21,6 +21,8 @@ const baseOptions: ConversionOptions = {
   background: "#ffffff",
   resizeMode: "keep",
   maintainAspectRatio: true,
+  allowUpscale: false,
+  pngCompression: "balanced",
 };
 
 function magic(bytes: Uint8Array): string {
