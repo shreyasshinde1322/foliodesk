@@ -38,7 +38,7 @@ export function UploadZone({
       onDrop={handleDrop}
     >
       <input
-        accept="image/png,image/jpeg,image/webp,image/gif,image/avif,image/heic,image/heif,image/vnd.adobe.photoshop,image/bmp,image/x-icon,image/svg+xml,.psd,.bmp,.ico"
+        accept="image/png,image/jpeg,image/webp,image/gif,image/avif,image/heic,image/heif,image/jxl,image/vnd.adobe.photoshop,image/bmp,image/x-icon,image/svg+xml,.psd,.bmp,.ico,.jxl"
         className="hidden"
         multiple
         onChange={(event) => {
@@ -68,7 +68,7 @@ export function UploadZone({
       </p>
       <p className="mt-2 flex items-center justify-center gap-1.5 text-xs text-muted">
         <Upload className="h-3.5 w-3.5" />
-        JPG, PNG, WebP, GIF, AVIF, HEIC, HEIF, PSD, BMP, ICO &amp; SVG · up to 25 MB per file ·
+        JPG, PNG, WebP, GIF, AVIF, HEIC, HEIF, JXL, PSD, BMP, ICO &amp; SVG · up to 25 MB per file ·
         multiple files supported
       </p>
     </div>

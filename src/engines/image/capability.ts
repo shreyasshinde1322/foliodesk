@@ -19,7 +19,7 @@ const SAMPLE_SVG =
   'PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIyIiBoZWlnaHQ9IjIiPjxyZWN0IHdpZHRoPSIyIiBoZWlnaHQ9IjIiIGZpbGw9InJlZCIvPjwvc3ZnPg==';
 
 export const UNSUPPORTED_CAPABILITIES: BrowserCapabilities = {
-  encode: { jpg: true, png: true, webp: false, avif: false },
+  encode: { jpg: true, png: true, webp: false, avif: false, jxl: false, heic: false, gif: true },
   decode: {
     jpg: true,
     png: true,
@@ -32,6 +32,7 @@ export const UNSUPPORTED_CAPABILITIES: BrowserCapabilities = {
     bmp: false,
     ico: false,
     svg: false,
+    jxl: false,
   },
   workers: false,
 };
@@ -115,6 +116,9 @@ export async function getBrowserCapabilities(): Promise<BrowserCapabilities> {
       png: true,
       webp: canEncode("webp", canvasProbe),
       avif: canEncode("avif", canvasProbe),
+      jxl: true,
+      heic: heicModule,
+      gif: true,
     },
     decode: {
       jpg: true,
@@ -128,6 +132,7 @@ export async function getBrowserCapabilities(): Promise<BrowserCapabilities> {
       bmp: true,
       ico: true,
       svg: svgDecode,
+      jxl: true,
     },
     workers,
   };

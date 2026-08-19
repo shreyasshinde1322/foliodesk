@@ -257,6 +257,16 @@ export function ImageConverter() {
   const updateOptions = useCallback(
     (patch: Partial<ConversionOptions>) => {
       setOptions((prev) => normalizeConversionOptions({ ...prev, ...patch }));
+      // Cancel all in-progress items so they re-process with the new quality
+      setItems((prev) =>
+        prev.map((entry) => {
+          if (isInProgress(entry.status)) {
+            cancelledRef.current.add(entry.id);
+            return { ...entry, status: "cancelled" as const };
+          }
+          return entry;
+        }),
+      );
       if (reconvertTimerRef.current) clearTimeout(reconvertTimerRef.current);
       reconvertTimerRef.current = setTimeout(() => {
         reconvertTimerRef.current = null;
@@ -372,6 +382,7 @@ export function ImageConverter() {
               onCancel={cancelItem}
               onCancelAll={cancelAll}
               onClearAll={clearAll}
+              onCompress={() => {}}
               onDownload={downloadOne}
               onReconvert={reconvertOne}
               onRemove={removeItem}

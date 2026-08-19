@@ -49,7 +49,18 @@ async function encode(
   let buffer: Buffer;
   let mimeType = "image/jpeg";
   if (format === "png") {
-    buffer = await pipeline.png({ compressionLevel: pngLevel(encodeOptions?.pngCompression) }).toBuffer();
+    const pngMode = encodeOptions?.pngMode ?? "lossless";
+    const pngOpts: Record<string, unknown> = { compressionLevel: pngLevel(encodeOptions?.pngCompression) };
+    if (pngMode === "recommended") {
+      pngOpts.palette = true;
+      pngOpts.colours = 256;
+      pngOpts.dither = 0.8;
+    } else if (pngMode === "maximum") {
+      pngOpts.palette = true;
+      pngOpts.colours = 64;
+      pngOpts.dither = 0.6;
+    }
+    buffer = await pipeline.png(pngOpts).toBuffer();
     mimeType = "image/png";
   } else if (format === "webp") {
     buffer = await pipeline.webp({ quality }).toBuffer();

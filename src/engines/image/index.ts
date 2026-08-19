@@ -31,6 +31,24 @@ export {
 } from "./formats";
 export { flattenBitmap, hasAlpha } from "./bitmap";
 export {
+  aspectRatioLabel,
+  estimateUniqueColors,
+  recommendFormat,
+} from "./analysis";
+export type { FormatRecommendation } from "./analysis";
+export {
+  optimizeImage,
+} from "./compressor";
+export type { OptimizationRequest, OptimizationResult } from "./compressor";
+export {
+  EXIF_ORIENTATION_LABELS,
+  hasPngMetadata,
+  inspectImageBytes,
+  readJpegExif,
+} from "./exif";
+export type { ImageMetadataReport } from "./exif";
+export { hashBytes, hashFile } from "./hash";
+export {
   buildOutputName,
   dedupeNames,
   sanitizeFileComponent,
@@ -72,5 +90,7 @@ export type {
   JobStage,
   OutputKind,
   PngCompression,
+  PngMode,
   ResizeMode,
 } from "./types";
+export { quantizeImage, hasAlphaChannel, uniqueColorCount, buildExactPalette } from "./quantize";

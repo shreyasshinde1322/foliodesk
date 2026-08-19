@@ -4,14 +4,20 @@ import { decodeIcoBitmap, extractPng, icoContainerError, pickBestIcoEntry } from
 import { decodePsd } from "./decoders/psd";
 import { renderSvgIntrinsic, sanitizeSvg, svgToText } from "./decoders/svg";
 import { encodePng } from "./encoders/png";
+import { encodeWasmJxl } from "./encoders/jxl";
+import { encodeWasmMozJpeg } from "./encoders/mozjpeg";
+import { encodeWasmHeic } from "./encoders/heic";
+import { encodeGif } from "./encoders/gif";
 import { canvasToBlob, createCanvas, get2dContext } from "./canvas";
 import { IMAGE_FORMAT_META } from "./formats";
+import { hasAlphaChannel, quantizeImage, buildExactPalette } from "./quantize";
 import type {
   DecodedBitmap,
   EncodeFormat,
   EncodeOptions,
   ImageCodec,
   ImageFormat,
+  PngMode,
 } from "./types";
 import { ImageProcessingError } from "./types";
 
@@ -47,6 +53,8 @@ async function decode(data: Uint8Array, sourceFormat: ImageFormat): Promise<Deco
       const svg = sanitizeSvg(svgToText(data));
       return renderSvgIntrinsic(svg);
     }
+    case "jxl":
+      return decodeJxl(data);
     default:
       return decodeNative(data, sourceFormat);
   }
@@ -101,6 +109,32 @@ async function decodeNative(data: Uint8Array, sourceFormat: ImageFormat): Promis
   }
 }
 
+async function decodeJxl(data: Uint8Array): Promise<DecodedBitmap> {
+  // Try native browser support first (Safari 17+)
+  try {
+    return await decodeNative(data, "jxl");
+  } catch {
+    // Fall through to WASM decoder
+  }
+
+  // WASM fallback via @jsquash/jxl
+  try {
+    const wasm = await import("@jsquash/jxl/decode.js");
+    await wasm.init();
+    const imageData = await wasm.default(data.slice().buffer as ArrayBuffer);
+    return {
+      width: imageData.width,
+      height: imageData.height,
+      data: new Uint8ClampedArray(imageData.data),
+    };
+  } catch {
+    throw new ImageProcessingError(
+      "JPEG XL images could not be decoded. Your browser does not support JXL decoding.",
+      "decode-failed",
+    );
+  }
+}
+
 async function scale(bitmap: DecodedBitmap, width: number, height: number): Promise<DecodedBitmap> {
   try {
     const sourceContext = get2dContext(createCanvas(bitmap.width, bitmap.height));
@@ -129,29 +163,96 @@ async function encode(
   encodeOptions?: EncodeOptions,
 ): Promise<{ data: Uint8Array; mimeType: string }> {
   if (format === "png") {
-    const data = encodePng(bitmap, encodeOptions?.pngCompression ?? "balanced");
-    return { data, mimeType: "image/png" };
+    return await encodePngMode(bitmap, encodeOptions?.pngCompression ?? "balanced", encodeOptions?.pngMode ?? "lossless");
+  }
+
+  if (format === "jxl") {
+    return encodeWasmJxl(bitmap, quality);
+  }
+
+  if (format === "heic") {
+    return encodeWasmHeic(bitmap);
+  }
+
+  if (format === "gif") {
+    return encodeGif(bitmap, quality);
   }
 
   const mimeType = IMAGE_FORMAT_META[format].mime;
   try {
-    const context = get2dContext(createCanvas(bitmap.width, bitmap.height));
+    const canvas = createCanvas(bitmap.width, bitmap.height);
+    const context = get2dContext(canvas);
+    context.clearRect(0, 0, bitmap.width, bitmap.height);
     context.putImageData(
       new ImageData(new Uint8ClampedArray(bitmap.data), bitmap.width, bitmap.height),
       0,
       0,
     );
-    const blob = await canvasToBlob(context.canvas as CanvasLike, mimeType, quality / 100);
+    const blob = await canvasToBlob(canvas, mimeType, quality / 100);
     const buffer = await blob.arrayBuffer();
     return { data: new Uint8Array(buffer), mimeType: blob.type || mimeType };
   } catch (error) {
     if (error instanceof ImageProcessingError) throw error;
     if (format === "webp") return encodeWasmWebp(bitmap, quality);
     if (format === "avif") return encodeWasmAvif(bitmap, quality);
+    if (format === "jpg") return encodeWasmMozJpeg(bitmap, quality);
+    const label = (IMAGE_FORMAT_META as Record<string, { label: string }>)[format]?.label ?? String(format).toUpperCase();
     throw new ImageProcessingError(
-      `This browser could not encode the image as ${IMAGE_FORMAT_META[format].label}.`,
+      `This browser could not encode the image as ${label}.`,
       "encode-failed",
     );
+  }
+}
+
+async function encodePngMode(
+  bitmap: DecodedBitmap,
+  compression: EncodeOptions["pngCompression"],
+  pngMode: PngMode,
+): Promise<{ data: Uint8Array; mimeType: string }> {
+  if (pngMode === "lossless") {
+    const data = await encodeWasmPng(bitmap, compression);
+    return { data, mimeType: "image/png" };
+  }
+
+  const hasAlpha = hasAlphaChannel(bitmap.data, bitmap.width, bitmap.height);
+
+  if (pngMode === "recommended") {
+    const exact = buildExactPalette(bitmap.data, bitmap.width, bitmap.height);
+    if (exact) {
+      const data = await encodeWasmPng(bitmap, compression, exact);
+      return { data, mimeType: "image/png" };
+    }
+    const data = await encodeWasmPng(bitmap, compression);
+    return { data, mimeType: "image/png" };
+  }
+
+  const maxColors = hasAlpha ? 128 : 64;
+  const quantized = quantizeImage(bitmap.data, bitmap.width, bitmap.height, maxColors);
+  if (quantized.colorCount <= 256) {
+    const data = await encodeWasmPng(bitmap, compression, { ...quantized, hasAlpha });
+    return { data, mimeType: "image/png" };
+  }
+  const data = await encodeWasmPng(bitmap, compression);
+  return { data, mimeType: "image/png" };
+}
+
+async function encodeWasmPng(
+  bitmap: DecodedBitmap,
+  compression: EncodeOptions["pngCompression"],
+  paletteInput?: import("./encoders/png").PaletteInput,
+): Promise<Uint8Array> {
+  try {
+    const wasm = await import("@jsquash/png/encode.js");
+    await wasm.init();
+    const imageData = new ImageData(
+      new Uint8ClampedArray(bitmap.data),
+      bitmap.width,
+      bitmap.height,
+    );
+    const buffer = await wasm.default(imageData, { bitDepth: 8 });
+    return new Uint8Array(buffer);
+  } catch {
+    return encodePng(bitmap, compression, paletteInput);
   }
 }
 
@@ -198,5 +299,3 @@ function toImageData(bitmap: DecodedBitmap): ImageData {
 function copyBuffer(data: Uint8Array): ArrayBuffer {
   return data.slice().buffer;
 }
-
-type CanvasLike = HTMLCanvasElement | OffscreenCanvas;

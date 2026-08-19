@@ -59,7 +59,7 @@ export default function ImageCompressorPage() {
         ]}
         faqs={content.faqs}
         features={content.features}
-        formats="Inputs: JPG, PNG, WebP, GIF, AVIF, HEIC, HEIF, PSD, BMP, ICO, SVG. Outputs: WebP, JPG, or the original format."
+        formats="Inputs: JPG, WebP, GIF, AVIF, HEIC, HEIF, PSD, BMP, ICO, SVG. Outputs: WebP, JPG, AVIF, or the original format (Auto format picks the smallest). PNG is not supported for compression — use Image Converter for PNG conversions."
         guideSlugs={[]}
         howItWorks={content.howItWorks}
         lede={content.lede}

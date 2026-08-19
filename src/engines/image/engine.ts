@@ -114,6 +114,7 @@ export async function encodeBitmap(
   const quality = targetMeta.lossy ? options.quality : 100;
   const output = await codec.encode(working, format, quality, {
     pngCompression: options.pngCompression,
+    pngMode: options.pngMode,
   });
   validateEncodeOutput(output.data, output.mimeType);
 
@@ -125,6 +126,8 @@ export async function encodeBitmap(
     mimeType: output.mimeType,
     outputName: buildOutputName(name, format),
     data: output.data,
+    quality: targetMeta.lossy ? options.quality : undefined,
+    pngMode: format === "png" ? options.pngMode : undefined,
   };
 }
 

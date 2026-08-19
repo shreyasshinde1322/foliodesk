@@ -11,6 +11,7 @@ const FORMAT_TO_FILE: Record<string, FileFormat> = {
   webp: "webp",
   gif: "gif",
   avif: "avif",
+  jxl: "image",
   heic: "image",
   heif: "image",
   psd: "image",

@@ -1,6 +1,6 @@
 "use client";
 
-import { AlertCircle, Ban, Check, Download, Eye, Loader2, RefreshCw, X } from "lucide-react";
+import { AlertCircle, Ban, Check, Download, Eye, Loader2, Play, RefreshCw, X } from "lucide-react";
 import { IMAGE_FORMAT_META } from "@/engines/image";
 import { formatBytes, formatDimensions } from "@/lib/format";
 import { cn } from "@/lib/cn";
@@ -15,8 +15,11 @@ export function FileQueue({
   onReconvert,
   onCancel,
   onCancelAll,
+  onCompress,
   onDownload,
   onClearAll,
+  onDownloadOriginal,
+  onCompressStronger,
 }: {
   items: QueueItem[];
   selectedId: string | null;
@@ -25,11 +28,15 @@ export function FileQueue({
   onReconvert: (id: string) => void;
   onCancel: (id: string) => void;
   onCancelAll: () => void;
+  onCompress: (id: string) => void;
   onDownload: (id: string) => void;
   onClearAll: () => void;
+  onDownloadOriginal?: (id: string) => void;
+  onCompressStronger?: (id: string) => void;
 }) {
   const complete = items.filter((item) => item.status === "complete").length;
   const failed = items.filter((item) => item.status === "failed").length;
+  const skipped = items.filter((item) => item.status === "skipped").length;
   const processing = items.filter((item) => isInProgress(item.status)).length;
   const showIndividualDownload = complete > 1;
 
@@ -49,6 +56,11 @@ export function FileQueue({
           {failed ? (
             <span className="rounded-full bg-error/10 px-2 py-0.5 text-xs font-semibold text-error">
               {failed} failed
+            </span>
+          ) : null}
+          {skipped ? (
+            <span className="rounded-full bg-warning/10 px-2 py-0.5 text-xs font-semibold text-warning">
+              {skipped} larger than original
             </span>
           ) : null}
           {complete ? (
@@ -149,6 +161,17 @@ export function FileQueue({
                   <Eye className="h-3.5 w-3.5" />
                   Preview
                 </button>
+                {item.status === "ready" ? (
+                  <button
+                    aria-label={`Compress ${item.name}`}
+                    className="btn-primary px-2.5 py-1.5 text-xs"
+                    onClick={() => onCompress(item.id)}
+                    type="button"
+                  >
+                    <Play className="h-3.5 w-3.5" />
+                    Compress
+                  </button>
+                ) : null}
                 {item.status === "complete" && item.result && showIndividualDownload ? (
                   <button
                     aria-label={`Download ${item.result.outputName}`}
@@ -159,6 +182,30 @@ export function FileQueue({
                     <Download className="h-3.5 w-3.5" />
                     {formatBytes(item.result.sizeBytes)}
                   </button>
+                ) : null}
+                {item.status === "skipped" && item.skippedReason === "larger" ? (
+                  <>
+                    <button
+                      aria-label={`Download the original ${item.name}`}
+                      className="inline-flex items-center gap-1.5 rounded-[var(--radius-sm)] border border-border px-2.5 py-1.5 text-xs font-semibold text-text transition-colors hover:border-primary/40 hover:text-primary"
+                      onClick={() => onDownloadOriginal?.(item.id)}
+                      title="Download the original file"
+                      type="button"
+                    >
+                      <Download className="h-3.5 w-3.5" />
+                      Original
+                    </button>
+                    <button
+                      aria-label="Compress this image stronger"
+                      className="inline-flex items-center gap-1.5 rounded-[var(--radius-sm)] border border-warning/40 bg-warning/10 px-2.5 py-1.5 text-xs font-semibold text-warning transition-colors hover:bg-warning/20"
+                      onClick={() => onCompressStronger?.(item.id)}
+                      title="Try again with lower quality"
+                      type="button"
+                    >
+                      <RefreshCw className="h-3.5 w-3.5" />
+                      Stronger
+                    </button>
+                  </>
                 ) : null}
                 {isInProgress(item.status) ? (
                   <button
@@ -200,6 +247,13 @@ export function FileQueue({
 }
 
 function StatusLine({ item }: { item: QueueItem }) {
+  if (item.status === "ready") {
+    return (
+      <span className="inline-flex items-center gap-1.5 text-xs font-medium text-primary">
+        Ready to compress
+      </span>
+    );
+  }
   if (isInProgress(item.status)) {
     return (
       <span className="inline-flex items-center gap-1.5 text-xs font-medium text-primary">
@@ -224,6 +278,22 @@ function StatusLine({ item }: { item: QueueItem }) {
       <span className="inline-flex items-start gap-1.5 text-xs text-error">
         <AlertCircle className="mt-0.5 h-3 w-3 shrink-0" />
         {item.error ?? "Conversion failed."}
+      </span>
+    );
+  }
+  if (item.status === "skipped") {
+    return (
+      <span className="inline-flex items-start gap-1.5 text-xs text-warning">
+        <AlertCircle className="mt-0.5 h-3 w-3 shrink-0" />
+        Larger than the original — skipped
+      </span>
+    );
+  }
+  if (item.status === "unsupported") {
+    return (
+      <span className="inline-flex items-start gap-1.5 text-xs text-info">
+        <AlertCircle className="mt-0.5 h-3 w-3 shrink-0" />
+        Format not supported for compression — use Image Converter
       </span>
     );
   }

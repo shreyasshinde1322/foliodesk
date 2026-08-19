@@ -9,7 +9,7 @@ import { ENCODE_FORMATS, INPUT_EXTENSIONS } from "@/engines/image";
 import type { ImageFormat } from "@/engines/image";
 
 const INPUT_FORMATS: ImageFormat[] = [
-  "jpg", "png", "webp", "gif", "avif", "heic", "heif", "psd", "bmp", "ico", "svg",
+  "jpg", "png", "webp", "gif", "avif", "heic", "heif", "psd", "bmp", "ico", "svg", "jxl",
 ];
 
 describe("strategy registry", () => {
@@ -57,7 +57,7 @@ describe("strategy registry", () => {
   it("exposes input and output format lists used by the UI", () => {
     const inputs = getInputFormats();
     expect(inputs).toEqual(expect.arrayContaining(["heic", "psd", "bmp", "ico", "svg"]));
-    expect(getOutputFormats()).toEqual(["jpg", "png", "webp", "avif"]);
+    expect(getOutputFormats()).toEqual(["jpg", "png", "webp", "avif", "jxl", "heic", "gif"]);
     for (const ext of ["heic", "psd", "bmp", "ico", "svg"]) {
       expect(INPUT_EXTENSIONS).toContain(ext);
     }

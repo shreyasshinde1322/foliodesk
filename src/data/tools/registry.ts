@@ -169,15 +169,37 @@ export const TOOLS: ToolDefinition[] = [
     popular: true,
     relatedTools: ["image-converter", "image-resizer", "image-editor", "metadata-cleaner"],
     description:
-      "Reduce image file size in your browser with one compression slider.",
+      "Reduce JPG and WebP image file size in your browser — quality modes, a target file size, auto format, and before/after comparison.",
     seo: {
-      title: "Image Compressor – Free Browser Image Size Reducer",
+      title: "Image Compressor – Free Browser JPG & WebP Size Reducer",
       description:
-        "Compress JPG, PNG, WebP and more right in your browser. One quality slider, batch processing, per-file savings, and no uploads.",
+        "Compress JPG and WebP right in your browser. Compression modes, target file size, auto format, before/after comparison, and no uploads.",
       canonicalPath: "/image-compressor",
     },
   }),
-  act("image-resizer", "Image Resizer", "image", "optimize", "resize", "image-action", "Resize images to target dimensions.", { sourceFormat: "image" }),
+  tool({
+    slug: "image-resizer",
+    name: "Image Resizer",
+    category: "image",
+    group: "optimize",
+    action: "resize",
+    iconType: "image-action",
+    sourceFormat: "image",
+    status: "active",
+    processingType: "local",
+    route: "/image-resizer",
+    featured: true,
+    popular: true,
+    relatedTools: ["image-converter", "image-compressor", "image-editor", "metadata-cleaner"],
+    description:
+      "Resize images to exact dimensions, scale by percentage, or fit into a target box — all in your browser with high-quality WASM algorithms.",
+    seo: {
+      title: "Image Resizer – Resize Images Online Free",
+      description:
+        "Resize images to exact dimensions, scale by percentage, or fit to a box. High-quality WASM algorithms, batch resize, and before/after comparison. No uploads.",
+      canonicalPath: "/image-resizer",
+    },
+  }),
   act("image-editor", "Image Editor", "image", "edit", "edit", "image-action", "Crop, adjust, and annotate images.", { sourceFormat: "image" }),
   act("background-remover", "Background Remover", "image", "edit", "remove-bg", "image-action", "Remove image backgrounds.", { sourceFormat: "image" }),
   act("image-upscaler", "Image Upscaler", "image", "optimize", "upscale", "image-action", "Increase image resolution.", { sourceFormat: "image" }),

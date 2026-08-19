@@ -23,6 +23,7 @@ const baseOptions: ConversionOptions = {
   maintainAspectRatio: true,
   allowUpscale: false,
   pngCompression: "balanced",
+  pngMode: "lossless",
 };
 
 function magic(bytes: Uint8Array): string {

@@ -24,12 +24,27 @@ export interface QueueItem {
   estimatedBytes?: number;
   result?: ConvertedImage;
   resultUrl?: string;
+  /** Set when a file was skipped because the compressed output was larger. */
+  skippedReason?: "larger";
+  /** One-off lower quality used by the "Compress stronger" action. */
+  qualityOverride?: number;
+  /** EXIF camera-orientation value (1-8), read from the original bytes. */
+  exifOrientation?: number;
+  /** Whether the original carried EXIF/PNG text metadata. */
+  metadataDetected?: boolean;
+  /** Human-readable format recommendation for this file. */
+  recommendation?: string;
+  /** Content hash used for duplicate detection. */
+  hash?: string;
+  /** Set when the file was detected as an unsupported format and rejected by the compressor. */
+  formatRejected?: string;
 }
 
 const IN_PROGRESS: ReadonlySet<JobStage> = new Set([
   "analyzing",
   "decoding",
   "processing",
+  "optimizing",
   "encoding",
 ]);
 
@@ -39,13 +54,17 @@ export function isInProgress(status: JobStage): boolean {
 
 export const STAGE_LABEL: Record<JobStage, string> = {
   queued: "Queued",
+  ready: "Ready",
   analyzing: "Detecting format",
   decoding: "Decoding pixels",
   processing: "Resizing / preparing",
+  optimizing: "Optimizing locally",
   encoding: "Encoding",
   complete: "Complete",
+  skipped: "Skipped",
   failed: "Failed",
   cancelled: "Cancelled",
+  unsupported: "Unsupported",
 };
 
 export function formatSupportsAlpha(format: EncodeFormat): boolean {

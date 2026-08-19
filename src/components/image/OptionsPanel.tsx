@@ -41,10 +41,13 @@ export function OptionsPanel({
     png: true,
     webp: true,
     avif: true,
+    jxl: true,
+    heic: true,
+    gif: true,
   };
   const format = options.outputFormat;
 
-  const showQuality = format === "jpg" || format === "webp" || format === "avif";
+  const showQuality = format === "jpg" || format === "webp" || format === "avif" || format === "jxl";
   const showPngCompression = format === "png";
   const showBackgroundColor = format === "jpg";
 
@@ -55,7 +58,7 @@ export function OptionsPanel({
       <fieldset className="mt-4">
         <legend className="text-sm font-semibold text-text">Output format</legend>
         <div className="mt-2 grid grid-cols-2 gap-2 sm:grid-cols-3">
-          {ENCODE_FORMATS.map((output: EncodeFormat) => {
+          {ENCODE_FORMATS.filter((f) => f !== "png").map((output: EncodeFormat) => {
             const supported = encodeSupport[output];
             const selected = options.outputFormat === output;
             return (
@@ -103,6 +106,7 @@ export function OptionsPanel({
             id="image-quality"
             max="100"
             min="10"
+            onInput={(event) => onChange({ quality: Number((event.target as HTMLInputElement).value) })}
             onChange={(event) => onChange({ quality: Number(event.target.value) })}
             step="1"
             type="range"

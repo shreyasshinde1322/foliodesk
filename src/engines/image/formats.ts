@@ -21,20 +21,24 @@ export const IMAGE_FORMAT_META: Record<ImageFormat, ImageFormatMeta> = {
   bmp: { extension: "bmp", mime: "image/bmp", label: "BMP", supportsAlpha: false, lossy: false, kind: "raster" },
   ico: { extension: "ico", mime: "image/x-icon", label: "ICO", supportsAlpha: true, lossy: false, kind: "raster" },
   svg: { extension: "svg", mime: "image/svg+xml", label: "SVG", supportsAlpha: true, lossy: false, kind: "vector" },
+  jxl: { extension: "jxl", mime: "image/jxl", label: "JXL", supportsAlpha: true, lossy: true, kind: "raster" },
 };
 
-export const ENCODE_FORMATS: EncodeFormat[] = ["jpg", "png", "webp", "avif"];
+export const ENCODE_FORMATS: EncodeFormat[] = ["jpg", "png", "webp", "avif", "jxl", "heic", "gif"];
 
 export const ENCODE_MIME: Record<EncodeFormat, string> = {
   jpg: "image/jpeg",
   png: "image/png",
   webp: "image/webp",
   avif: "image/avif",
+  jxl: "image/jxl",
+  heic: "image/heic",
+  gif: "image/gif",
 };
 
 export const INPUT_EXTENSIONS: string[] = [
   "jpg", "jpeg", "png", "webp", "gif", "avif",
-  "heic", "heif", "psd", "bmp", "ico", "svg",
+  "heic", "heif", "psd", "bmp", "ico", "svg", "jxl",
 ];
 
 const EXTENSION_TO_FORMAT: Record<string, ImageFormat> = {
@@ -50,6 +54,7 @@ const EXTENSION_TO_FORMAT: Record<string, ImageFormat> = {
   bmp: "bmp",
   ico: "ico",
   svg: "svg",
+  jxl: "jxl",
 };
 
 export function formatFromExtension(name: string): ImageFormat | null {
@@ -111,6 +116,15 @@ export function detectFormat(bytes: Uint8Array): ImageFormat | null {
   if (detectSvg(bytes)) {
     return "svg";
   }
+  if (bytes.length >= 12 &&
+    bytes[0] === 0x00 && bytes[1] === 0x00 && bytes[2] === 0x00 && bytes[3] === 0x0c &&
+    bytes[4] === 0x4a && bytes[5] === 0x58 && bytes[6] === 0x4c && bytes[7] === 0x20 &&
+    bytes[8] === 0x0d && bytes[9] === 0x0a && bytes[10] === 0x87 && bytes[11] === 0x0a) {
+    return "jxl";
+  }
+  if (bytes.length >= 2 && bytes[0] === 0xff && bytes[1] === 0x0a) {
+    return "jxl";
+  }
   return null;
 }
 
@@ -129,7 +143,7 @@ export function assertSupportedInput(bytes: Uint8Array, name: string): ImageForm
   const byBytes = detectFormat(bytes);
   if (!byBytes) {
     throw new ImageProcessingError(
-      "This file is not a supported image. Supported input: JPG, PNG, WebP, GIF, AVIF, HEIC, HEIF, PSD, BMP, ICO, or SVG.",
+      "This file is not a supported image. Supported input: JPG, PNG, WebP, GIF, AVIF, JXL, HEIC, HEIF, PSD, BMP, ICO, or SVG.",
       "unsupported-format",
     );
   }

@@ -148,13 +148,13 @@ function PreviewCard({
     <div className="w-full max-w-xs text-center">
       <div
         className={cn(
-          "flex h-48 items-center justify-center overflow-hidden rounded-xl border border-border bg-white",
+          "flex max-h-[50vh] min-h-32 items-center justify-center overflow-hidden rounded-xl border border-border bg-white",
           checkerboard && "bg-checkerboard",
         )}
       >
         {url ? (
           // eslint-disable-next-line @next/next/no-img-element
-          <img alt="" className="max-h-48 max-w-full object-contain" src={url} />
+          <img alt="" className="max-h-[50vh] max-w-full object-contain" src={url} />
         ) : (
           <span className="text-sm text-muted">Waiting for conversion…</span>
         )}

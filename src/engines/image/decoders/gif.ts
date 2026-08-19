@@ -17,13 +17,27 @@ function skipSubBlocks(bytes: Uint8Array, start: number): number {
 /**
  * Parse the GIF block structure without decoding pixels. Counts image
  * descriptors (0x2C). Multiple image descriptors means the GIF is animated,
- * which the converter does not support.
+ * which the compressor does not support.
+ *
+ * After the 6-byte header and 7-byte Logical Screen Descriptor, a Global Color
+ * Table may follow (when bit 7 of the packed byte is set). The parser must skip
+ * it before scanning for block markers, otherwise the first color-table byte can
+ * be misinterpreted as a block marker and cause the parser to bail early,
+ * misreporting an animated GIF as static.
  */
 export function detectGifAnimation(bytes: Uint8Array): GifAnalysis {
   if (bytes.length < 13) return { animated: false, frameCount: 0 };
-  let images = 0;
-  let pos = 13;
 
+  // Skip Global Color Table if present.
+  // Byte 10 = packed field; bit 7 = GCT flag, bits 0-2 = GCT size (N), table = 3 * 2^(N+1).
+  const packed = bytes[10];
+  let pos = 13;
+  if (packed & 0x80) {
+    const gctSize = 3 * (1 << ((packed & 0x07) + 1));
+    pos += gctSize;
+  }
+
+  let images = 0;
   while (pos < bytes.length) {
     const marker = bytes[pos];
     if (marker === 0x3b) break; // trailer

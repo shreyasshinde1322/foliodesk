@@ -10,6 +10,7 @@ const base: ConversionOptions = {
   maintainAspectRatio: true,
   allowUpscale: false,
   pngCompression: "balanced",
+  pngMode: "lossless",
 };
 
 describe("resize math", () => {
